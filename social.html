@@ -1,52 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AeroBook - Social</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroBook - Social Wall</title>
     <style>
-        body { background: #e9ebee; margin: 0; font-family: sans-serif; }
-        .nav { background: #3b5998; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 500px; margin: 15px auto; padding: 10px; }
-        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        body { background: #e9ebee; margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
         
-        /* Old Google Style */
-        .google-logo span { font-weight: bold; font-size: 24px; font-family: 'arial'; }
+        /* Navbar with Aero Blue */
+        .navbar { 
+            background: #3b5998; color: white; padding: 10px 15px; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .friends-toggle { background: rgba(0,0,0,0.2); border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+
+        .container { max-width: 500px; margin: 15px auto; padding: 0 10px; }
+
+        /* Classic Google Search Integration */
+        .google-box { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .google-logo span { font-weight: bold; font-size: 26px; font-family: 'arial'; }
         .g-blue { color: #4285F4; } .g-red { color: #EA4335; } .g-yellow { color: #FBBC05; } .g-green { color: #34A853; }
-        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 8px 16px; border-radius: 4px; color: #3c4043; cursor: pointer; margin: 5px; }
+        .search-input { width: 100%; border: 1px solid #dfe1e5; border-radius: 24px; padding: 10px 15px; margin: 15px 0; outline: none; }
+        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 8px 16px; border-radius: 4px; color: #3c4043; cursor: pointer; margin: 0 5px; font-size: 13px; }
         .google-btn:hover { border: 1px solid #dadce0; }
+
+        /* Sidebar & Feed */
+        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        #friends-panel { display: none; background: #fffbe6; border: 1px solid #ffe58f; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
         
-        input, textarea { width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 4px; box-sizing: border-box; }
-        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 16px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 5px; }
-        #friends { display: none; background: #fffbe6; padding: 10px; border: 1px solid #ffe58f; margin-bottom: 10px; border-radius: 4px; }
+        textarea { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: none; box-sizing: border-box; }
+        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 16px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 8px; }
+        
+        .feed-post { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 10px; }
+        .feed-author { color: #365899; font-weight: bold; text-decoration: none; }
+        .search-res { margin-top: 10px; font-size: 13px; color: #202124; }
     </style>
 </head>
 <body>
-    <div class="nav">
-        <a href="/index.html" style="color:white; text-decoration:none; font-size: 13px;">◀ Player</a>
+
+    <div class="navbar">
+        <div style="display:flex; gap:15px; align-items:center;">
+            <a href="/index.html" class="nav-link">◀ Player</a>
+            <button onclick="toggleFriends()" class="friends-toggle">Friends</button>
+        </div>
         <b>AeroBook</b>
-        <button onclick="toggleF()" style="background:rgba(0,0,0,0.2); border:none; color:white; padding:4px 8px; border-radius:3px; cursor:pointer;">Friends</button>
+        <a href="/logout" class="nav-link">Sign Out</a>
     </div>
 
     <div class="container">
-        <div id="friends">
-            <h4 style="margin:0;">Friends Online</h4>
-            <div style="font-size:12px; margin-top:5px;">🟢 Pashaaero (Admin)<br>🟢 AeroUser_2026</div>
+        <div id="friends-panel">
+            <h4 style="margin:0 0 5px 0; font-size:14px;">Friends Online</h4>
+            <div id="friends-list" style="font-size:12px;">Loading friends...</div>
         </div>
 
-        <div class="box" style="text-align:center;">
+        <div class="google-box">
             <div class="google-logo">
                 <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
             </div>
-            <input type="text" id="sq" placeholder="Search Aero users..." style="border-radius:20px; margin: 10px 0;">
+            <input type="text" id="sq" class="search-input" placeholder="Search Aero users...">
             <div>
                 <button onclick="searchAero()" class="google-btn">Aero Search</button>
-                <button onclick="googleWeb()" class="google-btn">I'm Feeling Lucky</button>
+                <button onclick="googleLucky()" class="google-btn">I'm Feeling Lucky</button>
             </div>
-            <div id="res" style="margin-top:10px; font-size:13px;"></div>
+            <div id="search-results" class="search-res"></div>
         </div>
 
         <div class="box">
             <form action="/api/post" method="POST">
-                <textarea name="content" placeholder="What's on your mind?" required></textarea>
+                <textarea name="content" rows="3" placeholder="What's on your mind?" required></textarea>
                 <button type="submit" class="post-btn">Post</button>
                 <div style="clear:both;"></div>
             </form>
@@ -56,23 +79,49 @@
     </div>
 
     <script>
-        function toggleF() { const f = document.getElementById('friends'); f.style.display = f.style.display==='block'?'none':'block'; }
-
-        async function searchAero() {
-            const q = document.getElementById('sq').value;
-            const res = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
-            const div = document.getElementById('res');
-            if (res.length > 0) div.innerHTML = `Found User: <b>${res[0].nickname}</b>`;
-            else div.innerHTML = `Not found. <a href="https://google.com/search?q=${q}" target="_blank">Search Google?</a>`;
+        // Toggle Friends Panel
+        function toggleFriends() {
+            const panel = document.getElementById('friends-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        function googleWeb() { window.open('https://google.com/search?q=' + document.getElementById('sq').value); }
+        // Search Aero Users or Fallback to Google
+        async function searchAero() {
+            const q = document.getElementById('sq').value;
+            const resDiv = document.getElementById('search-results');
+            if(!q) return;
 
-        fetch('/api/posts').then(r => r.json()).then(p => {
-            document.getElementById('feed').innerHTML = p.map(x => `
-                <div class="box"><b>${x.author}</b><p>${x.content}</p></div>
-            `).join('');
-        });
+            const res = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
+            
+            if (res.length > 0) {
+                resDiv.innerHTML = `Found: <a href="/profile.html?user=${res[0].nickname}" style="color:#365899; font-weight:bold;">${res[0].nickname} (View Profile)</a>`;
+            } else {
+                resDiv.innerHTML = `No user found on Aero. <a href="https://google.com/search?q=${q}" target="_blank" style="color:#1a0dab;">Search Google for "${q}"</a>`;
+            }
+        }
+
+        // Classic "I'm Feeling Lucky" Redirect
+        function googleLucky() {
+            const q = document.getElementById('sq').value;
+            window.open(`https://www.google.com/search?q=${q}`, '_blank');
+        }
+
+        // Load Global Wall Posts
+        fetch('/api/posts')
+            .then(r => r.json())
+            .then(posts => {
+                const feed = document.getElementById('feed');
+                feed.innerHTML = posts.map(p => `
+                    <div class="feed-post">
+                        <a href="/profile.html?user=${p.author}" class="feed-author">${p.author}</a>
+                        <p style="margin:5px 0; color:#1c1e21;">${p.content}</p>
+                        <span style="font-size:10px; color:#90949c;">${new Date(p.date).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            });
+            
+        // Mock Friends Load (Updates with real DB data when connected)
+        document.getElementById('friends-list').innerHTML = "🟢 Pashaaero (Admin)<br>🟢 AeroUser_2026";
     </script>
 </body>
 </html>
