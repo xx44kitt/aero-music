@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; background: linear-gradient(135deg, #00c6ff, #0072ff); font-family: sans-serif; color: white; text-align: center; }
+        .glass-card { background: rgba(255,255,255,0.2); border: 1px solid white; border-radius: 20px; margin: 20px; padding: 20px; }
+        input, textarea { width: 90%; padding: 10px; margin: 10px 0; border-radius: 10px; border: none; }
+        .btn-save { width: 90%; padding: 12px; border-radius: 20px; background: #aaffaa; border: none; font-weight: bold; color: #004e92; }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h2>Account Settings</h2>
+        <div class="glass-card">
+            <form action="/update-account" method="POST">
+                <label>Change Nickname</label>
+                <input type="text" name="nickname" placeholder="New Nickname">
+                <label>Profile Bio</label>
+                <textarea name="bio" placeholder="Write something about your music taste..."></textarea>
+                <button type="submit" class="btn-save">Save Profile Changes</button>
+            </form>
+        </div>
+        <a href="index.html" style="color: white; font-size: 13px;">← Back to Music</a>
+    </div>
+</body>
+</html>

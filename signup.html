@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aero Music - Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <style>
+        body { 
+            margin: 0; background: #0072ff; 
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #00e5ff 100%);
+            background-attachment: fixed; font-family: 'Helvetica Neue', Helvetica, sans-serif;
+            color: white; text-align: center;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.4); height: 50px; line-height: 50px;
+            font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.5);
+            box-shadow: inset 0 10px 15px rgba(255,255,255,0.4); text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 25px; margin: 15px; padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Usability Fix: Aligned Labels */
+        .input-group { text-align: left; margin: 0 auto; width: 90%; }
+        label { display: block; font-size: 13px; font-weight: bold; margin: 8px 0 3px 10px; text-shadow: 0 1px 1px rgba(0,0,0,0.3); }
+
+        input {
+            width: 100%; padding: 12px; box-sizing: border-box; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.9);
+            font-size: 16px; color: #333; outline: none;
+        }
+
+        input:focus { border-color: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.5); }
+
+        .btn {
+            width: 90%; padding: 14px; border-radius: 25px; border: 1px solid white;
+            background: linear-gradient(to bottom, #74ebd5 0%, #9face6 100%);
+            color: #004e92; font-weight: bold; font-size: 17px; margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
+        }
+
+        .btn:active { background: #74ebd5; transform: translateY(1px); }
+    </style>
+</head>
+<body>
+
+    <div class="header">CREATE ACCOUNT</div>
+
+    <div class="glass-card">
+        <form action="/signup" method="POST">
+            
+            <div class="input-group">
+                <label>NICKNAME</label>
+                <input type="text" name="nickname" placeholder="e.g. AeroUser" required>
+            </div>
+
+            <div class="input-group">
+                <label>EMAIL ADDRESS</label>
+                <input type="email" name="email" placeholder="name@email.com" 
+                       autocapitalize="off" autocorrect="off" required>
+            </div>
+
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <input type="password" name="password" placeholder="Min. 6 characters" required>
+            </div>
+
+            <button type="submit" class="btn">Register & Start Listening</button>
+        </form>
+
+        <a href="login.html" style="display:block; margin-top:20px; font-size:13px; color:white; text-decoration:none; opacity:0.8;">
+            Already have an account? <b>Login</b>
+        </a>
+    </div>
+
+</body>
+</html>
