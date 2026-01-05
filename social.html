@@ -1,103 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroBook - Social</title>
+    <title>AeroBook</title>
     <style>
-        body { background: #e9ebee; margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
-        
-        /* Fixed Navbar Layout */
-        .navbar { 
-            background: #3b5998; color: white; padding: 10px 15px; 
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
-
-        .container { max-width: 500px; margin: 15px auto; padding: 0 10px; }
-
-        /* Updated Aero Search Logo (Classic Style) */
-        .search-box { background: white; border: 1px solid #ddd; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
-        .aero-logo { font-family: 'arial', sans-serif; font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: -1px; }
-        .ae-blue { color: #4285F4; } .ae-red { color: #EA4335; } .ae-yellow { color: #FBBC05; } .ae-green { color: #34A853; }
-        
-        .search-input { width: 100%; border: 1px solid #dfe1e5; border-radius: 24px; padding: 12px 20px; margin-bottom: 15px; outline: none; box-sizing: border-box; }
-        .search-input:hover { box-shadow: 0 1px 6px rgba(32,33,36,0.28); border-color: rgba(223,225,229,0); }
-        
-        .btn-row { display: flex; justify-content: center; gap: 10px; }
-        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 10px 20px; border-radius: 4px; color: #3c4043; cursor: pointer; font-size: 14px; }
-        .google-btn:hover { border: 1px solid #dadce0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-
-        /* Post Layout Fixes */
+        body { background: #e9ebee; margin: 0; font-family: sans-serif; }
+        .navbar { background: #3b5998; color: white; padding: 10px; display: flex; justify-content: space-between; }
+        .container { max-width: 500px; margin: 15px auto; padding: 10px; }
         .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-        textarea { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: none; box-sizing: border-box; font-family: inherit; }
-        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 20px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 10px; }
-        
-        .feed-post { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 10px; }
-        .author { color: #365899; font-weight: bold; text-decoration: none; }
+        .aero-logo { font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 10px; font-family: arial; }
+        .btn { background: #4267b2; color: white; border: none; padding: 10px; border-radius: 2px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div class="navbar">
-        <a href="/index.html" class="nav-link">◀ Back to Home</a>
+        <a href="/index.html" style="color:white; text-decoration:none;">◀ Home</a>
         <b>AeroBook</b>
-        <a href="/library.html" class="nav-link">Music</a>
+        <div></div>
     </div>
-
     <div class="container">
-        <div class="search-box">
+        <div class="box">
             <div class="aero-logo">
-                <span class="ae-blue">A</span><span class="ae-red">e</span><span class="ae-yellow">r</span><span class="ae-blue">o</span><span class="ae-green">B</span><span class="ae-red">o</span><span class="ae-yellow">o</span><span class="ae-blue">k</span>
+                <span style="color:#4285F4">A</span><span style="color:#EA4335">e</span><span style="color:#FBBC05">r</span><span style="color:#4285F4">o</span><span style="color:#34A853">B</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">k</span>
             </div>
-            <input type="text" id="userQuery" class="search-input" placeholder="Search for friends...">
-            <div class="btn-row">
-                <button onclick="runSearch()" class="google-btn">Aero Search</button>
-                <button onclick="lucky()" class="google-btn">I'm Feeling Aero</button>
-            </div>
-            <div id="results" style="margin-top: 15px; font-size: 14px;"></div>
+            <input type="text" id="sq" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ddd;" placeholder="Search friends...">
+            <button onclick="search()" class="btn" style="width:100%; margin-top:10px;">Search</button>
+            <div id="res" style="margin-top:10px; text-align:center;"></div>
         </div>
-
         <div class="box">
             <form action="/api/post" method="POST">
-                <textarea name="content" rows="3" placeholder="What's happening?" required></textarea>
-                <button type="submit" class="post-btn">Post to Wall</button>
+                <textarea name="content" style="width:100%;" placeholder="Post to Wall..."></textarea>
+                <button type="submit" class="btn" style="float:right; margin-top:5px;">Post</button>
                 <div style="clear:both;"></div>
             </form>
         </div>
-
         <div id="feed"></div>
     </div>
-
     <script>
-        async function runSearch() {
-            const q = document.getElementById('userQuery').value;
-            const out = document.getElementById('results');
-            if(!q) return;
-
-            const res = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
-            if (res.length > 0) {
-                out.innerHTML = `Found: <a href="/profile.html?user=${res[0].nickname}" class="author">${res[0].nickname}</a>`;
-            } else {
-                out.innerHTML = `<span style="color:#70757a;">User not found.</span>`;
-            }
+        async function search() {
+            const q = document.getElementById('sq').value;
+            const r = await fetch(`/api/search-users?name=${q}`).then(res => res.json());
+            document.getElementById('res').innerHTML = r.length ? `<a href="/profile.html?user=${r[0].nickname}">${r[0].nickname}</a>` : "Not found.";
         }
-
-        function lucky() {
-            const q = document.getElementById('userQuery').value;
-            window.open(`https://www.google.com/search?q=${q}`, '_blank');
-        }
-
-        // Load Feed
         fetch('/api/posts').then(r => r.json()).then(posts => {
-            document.getElementById('feed').innerHTML = posts.map(p => `
-                <div class="feed-post">
-                    <a href="/profile.html?user=${p.author}" class="author">${p.author}</a>
-                    <p style="margin:5px 0;">${p.content}</p>
-                    <small style="color:#90949c;">${new Date(p.date).toLocaleString()}</small>
-                </div>
-            `).join('');
+            document.getElementById('feed').innerHTML = posts.map(p => `<div class="box"><b>${p.author}</b><p>${p.content}</p></div>`).join('');
         });
     </script>
 </body>
