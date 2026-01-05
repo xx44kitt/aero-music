@@ -7,121 +7,66 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. SESSION CONFIGURATION (The "Memory" of the site)
 app.use(session({
-    secret: 'aero-social-2010-logic',
+    secret: 'aero-social-2010',
     resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 3600000 } // Session lasts 1 hour
+    saveUninitialized: false
 }));
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 2. DATABASE HELPERS
-const USERS_FILE = 'users.json';
+// --- DATABASE LOGIC ---
+let posts = []; // Stores Wall Posts
 
 const getUsers = () => {
-    if (!fs.existsSync(USERS_FILE)) return [];
-    try {
-        const data = fs.readFileSync(USERS_FILE, 'utf8');
-        return data.trim().split('\n').filter(line => line).map(line => JSON.parse(line));
-    } catch (e) {
-        return [];
-    }
+    if (!fs.existsSync('users.json')) return [];
+    const data = fs.readFileSync('users.json', 'utf8');
+    return data.trim().split('\n').filter(l => l).map(l => JSON.parse(l));
 };
 
-// 3. SECURITY MIDDLEWARE (The "Encryption" lock)
-const protect = (req, res, next) => {
-    if (req.session.isLoggedIn) {
-        next();
-    } else {
-        res.redirect('/login.html');
-    }
-};
-
-// 4. AUTHENTICATION ROUTES
-app.post('/signup', (req, res) => {
-    const { nickname, email, password } = req.body;
-    const users = getUsers();
-    
-    if (users.find(u => u.email === email.toLowerCase())) {
-        return res.send('Email already exists. <a href="/signup.html">Try again</a>');
-    }
-
-    const newUser = {
-        nickname,
-        email: email.toLowerCase(),
-        password,
-        friends: [],
-        theme: 'iOS 6 Classic',
-        joined: new Date().toLocaleDateString()
-    };
-
-    fs.appendFileSync(USERS_FILE, JSON.stringify(newUser) + '\n');
-    res.send('<body style="background:#444;color:white;text-align:center;padding-top:50px;font-family:sans-serif;"><h2>Account Created!</h2><a href="/login.html" style="color:#74b0ed">Login to Aero Music</a></body>');
-});
-
+// --- AUTH SYSTEM (FIXED) ---
 app.post('/login', (req, res) => {
-    const { email, password } = req.body;
+    const emailInput = req.body.email.toLowerCase().trim();
+    const passwordInput = req.body.password;
+    
     const users = getUsers();
-    const user = users.find(u => u.email === email.toLowerCase() && u.password === password);
+    // Improved matching logic
+    const user = users.find(u => u.email.toLowerCase().trim() === emailInput && u.password === passwordInput);
 
     if (user) {
         req.session.isLoggedIn = true;
         req.session.nickname = user.nickname;
-        req.session.email = user.email;
         res.redirect('/index.html');
     } else {
-        res.send('Invalid login. <a href="/login.html">Try again</a>');
+        res.send('User not found. Remember: On Render Free, accounts reset after updates! <a href="/signup.html">Sign up again</a>');
     }
 });
 
-// 5. SOCIAL SYSTEM API
-let globalMessages = []; // Temporary message store for this session
-
-app.get('/api/users', protect, (req, res) => {
-    const users = getUsers().map(u => ({ nickname: u.nickname, email: u.email }));
-    res.json(users);
-});
-
-app.get('/api/messages', protect, (req, res) => {
-    res.json(globalMessages);
-});
-
-app.post('/api/send-message', protect, (req, res) => {
-    const newMessage = {
-        from: req.session.nickname,
-        text: req.body.text,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+// --- FACEBOOK PROTOCOL (Posts & Comments) ---
+app.post('/api/post', (req, res) => {
+    const newPost = {
+        id: Date.now(),
+        author: req.session.nickname || "Anonymous",
+        content: req.body.content,
+        comments: [],
+        date: new Date().toLocaleString()
     };
-    globalMessages.push(newMessage);
-    if (globalMessages.length > 50) globalMessages.shift(); // Keep only last 50
+    posts.unshift(newPost);
     res.redirect('/social.html');
 });
 
-// 6. ACCOUNT UPDATE LOGIC
-app.post('/update-account', protect, (req, res) => {
-    // Logic for updating settings (Quality, Theme, etc.)
-    res.redirect('/account.html?saved=true');
+app.post('/api/comment', (req, res) => {
+    const { postId, text } = req.body;
+    const post = posts.find(p => p.id == postId);
+    if (post) {
+        post.comments.push({
+            author: req.session.nickname || "Anonymous",
+            text: text
+        });
+    }
+    res.redirect('/social.html');
 });
 
-// 7. PAGE SERVING (Static Protection)
-app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
-app.get('/account.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'account.html')));
-app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
+app.get('/api/posts', (req, res) => res.json(posts));
 
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
-app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
-
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login.html');
-});
-
-// 8. START SERVER
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log('Aero Social Live'));
