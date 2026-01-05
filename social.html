@@ -3,74 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroBook - Social Wall</title>
+    <title>AeroBook - Social</title>
     <style>
         body { background: #e9ebee; margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
         
-        /* Navbar with Aero Blue */
+        /* Fixed Navbar Layout */
         .navbar { 
             background: #3b5998; color: white; padding: 10px 15px; 
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: sticky; top: 0; z-index: 100;
         }
         .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
-        .friends-toggle { background: rgba(0,0,0,0.2); border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
 
         .container { max-width: 500px; margin: 15px auto; padding: 0 10px; }
 
-        /* Classic Google Search Integration */
-        .google-box { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
-        .google-logo span { font-weight: bold; font-size: 26px; font-family: 'arial'; }
-        .g-blue { color: #4285F4; } .g-red { color: #EA4335; } .g-yellow { color: #FBBC05; } .g-green { color: #34A853; }
-        .search-input { width: 100%; border: 1px solid #dfe1e5; border-radius: 24px; padding: 10px 15px; margin: 15px 0; outline: none; }
-        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 8px 16px; border-radius: 4px; color: #3c4043; cursor: pointer; margin: 0 5px; font-size: 13px; }
-        .google-btn:hover { border: 1px solid #dadce0; }
-
-        /* Sidebar & Feed */
-        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-        #friends-panel { display: none; background: #fffbe6; border: 1px solid #ffe58f; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        /* Updated Aero Search Logo (Classic Style) */
+        .search-box { background: white; border: 1px solid #ddd; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .aero-logo { font-family: 'arial', sans-serif; font-size: 32px; font-weight: bold; margin-bottom: 15px; letter-spacing: -1px; }
+        .ae-blue { color: #4285F4; } .ae-red { color: #EA4335; } .ae-yellow { color: #FBBC05; } .ae-green { color: #34A853; }
         
-        textarea { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: none; box-sizing: border-box; }
-        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 16px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 8px; }
+        .search-input { width: 100%; border: 1px solid #dfe1e5; border-radius: 24px; padding: 12px 20px; margin-bottom: 15px; outline: none; box-sizing: border-box; }
+        .search-input:hover { box-shadow: 0 1px 6px rgba(32,33,36,0.28); border-color: rgba(223,225,229,0); }
+        
+        .btn-row { display: flex; justify-content: center; gap: 10px; }
+        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 10px 20px; border-radius: 4px; color: #3c4043; cursor: pointer; font-size: 14px; }
+        .google-btn:hover { border: 1px solid #dadce0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+
+        /* Post Layout Fixes */
+        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        textarea { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; resize: none; box-sizing: border-box; font-family: inherit; }
+        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 20px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 10px; }
         
         .feed-post { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 4px; margin-bottom: 10px; }
-        .feed-author { color: #365899; font-weight: bold; text-decoration: none; }
-        .search-res { margin-top: 10px; font-size: 13px; color: #202124; }
+        .author { color: #365899; font-weight: bold; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div style="display:flex; gap:15px; align-items:center;">
-            <a href="/index.html" class="nav-link">◀ Player</a>
-            <button onclick="toggleFriends()" class="friends-toggle">Friends</button>
-        </div>
+        <a href="/index.html" class="nav-link">◀ Back to Home</a>
         <b>AeroBook</b>
-        <a href="/logout" class="nav-link">Sign Out</a>
+        <a href="/library.html" class="nav-link">Music</a>
     </div>
 
     <div class="container">
-        <div id="friends-panel">
-            <h4 style="margin:0 0 5px 0; font-size:14px;">Friends Online</h4>
-            <div id="friends-list" style="font-size:12px;">Loading friends...</div>
-        </div>
-
-        <div class="google-box">
-            <div class="google-logo">
-                <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
+        <div class="search-box">
+            <div class="aero-logo">
+                <span class="ae-blue">A</span><span class="ae-red">e</span><span class="ae-yellow">r</span><span class="ae-blue">o</span><span class="ae-green">B</span><span class="ae-red">o</span><span class="ae-yellow">o</span><span class="ae-blue">k</span>
             </div>
-            <input type="text" id="sq" class="search-input" placeholder="Search Aero users...">
-            <div>
-                <button onclick="searchAero()" class="google-btn">Aero Search</button>
-                <button onclick="googleLucky()" class="google-btn">I'm Feeling Lucky</button>
+            <input type="text" id="userQuery" class="search-input" placeholder="Search for friends...">
+            <div class="btn-row">
+                <button onclick="runSearch()" class="google-btn">Aero Search</button>
+                <button onclick="lucky()" class="google-btn">I'm Feeling Aero</button>
             </div>
-            <div id="search-results" class="search-res"></div>
+            <div id="results" style="margin-top: 15px; font-size: 14px;"></div>
         </div>
 
         <div class="box">
             <form action="/api/post" method="POST">
-                <textarea name="content" rows="3" placeholder="What's on your mind?" required></textarea>
-                <button type="submit" class="post-btn">Post</button>
+                <textarea name="content" rows="3" placeholder="What's happening?" required></textarea>
+                <button type="submit" class="post-btn">Post to Wall</button>
                 <div style="clear:both;"></div>
             </form>
         </div>
@@ -79,49 +71,34 @@
     </div>
 
     <script>
-        // Toggle Friends Panel
-        function toggleFriends() {
-            const panel = document.getElementById('friends-panel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
-
-        // Search Aero Users or Fallback to Google
-        async function searchAero() {
-            const q = document.getElementById('sq').value;
-            const resDiv = document.getElementById('search-results');
+        async function runSearch() {
+            const q = document.getElementById('userQuery').value;
+            const out = document.getElementById('results');
             if(!q) return;
 
             const res = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
-            
             if (res.length > 0) {
-                resDiv.innerHTML = `Found: <a href="/profile.html?user=${res[0].nickname}" style="color:#365899; font-weight:bold;">${res[0].nickname} (View Profile)</a>`;
+                out.innerHTML = `Found: <a href="/profile.html?user=${res[0].nickname}" class="author">${res[0].nickname}</a>`;
             } else {
-                resDiv.innerHTML = `No user found on Aero. <a href="https://google.com/search?q=${q}" target="_blank" style="color:#1a0dab;">Search Google for "${q}"</a>`;
+                out.innerHTML = `<span style="color:#70757a;">User not found.</span>`;
             }
         }
 
-        // Classic "I'm Feeling Lucky" Redirect
-        function googleLucky() {
-            const q = document.getElementById('sq').value;
+        function lucky() {
+            const q = document.getElementById('userQuery').value;
             window.open(`https://www.google.com/search?q=${q}`, '_blank');
         }
 
-        // Load Global Wall Posts
-        fetch('/api/posts')
-            .then(r => r.json())
-            .then(posts => {
-                const feed = document.getElementById('feed');
-                feed.innerHTML = posts.map(p => `
-                    <div class="feed-post">
-                        <a href="/profile.html?user=${p.author}" class="feed-author">${p.author}</a>
-                        <p style="margin:5px 0; color:#1c1e21;">${p.content}</p>
-                        <span style="font-size:10px; color:#90949c;">${new Date(p.date).toLocaleString()}</span>
-                    </div>
-                `).join('');
-            });
-            
-        // Mock Friends Load (Updates with real DB data when connected)
-        document.getElementById('friends-list').innerHTML = "🟢 Pashaaero (Admin)<br>🟢 AeroUser_2026";
+        // Load Feed
+        fetch('/api/posts').then(r => r.json()).then(posts => {
+            document.getElementById('feed').innerHTML = posts.map(p => `
+                <div class="feed-post">
+                    <a href="/profile.html?user=${p.author}" class="author">${p.author}</a>
+                    <p style="margin:5px 0;">${p.content}</p>
+                    <small style="color:#90949c;">${new Date(p.date).toLocaleString()}</small>
+                </div>
+            `).join('');
+        });
     </script>
 </body>
 </html>
