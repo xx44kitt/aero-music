@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Settings</title>
+    <title>Account</title>
     <style>
         body { background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); margin: 0; font-family: "Helvetica Neue", Helvetica; }
         .navbar { 
@@ -10,11 +10,10 @@
             height: 44px; display: flex; align-items: center; justify-content: center;
             color: white; font-weight: bold; text-shadow: 0 -1px 0 rgba(0,0,0,0.5); border-bottom: 1px solid #2d3e5a;
         }
-        .section-title { margin: 20px 25px 5px; color: #4c566c; font-weight: bold; text-shadow: 0 1px 0 white; font-size: 17px; }
+        .section-title { margin: 20px 25px 5px; color: #4c566c; font-weight: bold; text-shadow: 0 1px 0 white; font-size: 14px; text-transform: uppercase; }
         .ios-list { background: white; border: 1px solid #ababab; border-radius: 10px; margin: 0 15px 20px; padding: 0; list-style: none; overflow: hidden; }
         .ios-list li { border-bottom: 1px solid #ababab; padding: 12px; display: flex; justify-content: space-between; align-items: center; color: black; font-weight: bold; }
-        .ios-list li:last-child { border-bottom: none; }
-        select { border: none; background: transparent; color: #586d8d; font-size: 16px; font-weight: normal; outline: none; -webkit-appearance: none; text-align: right; width: 50%; }
+        select, input { border: none; background: transparent; color: #586d8d; font-size: 16px; outline: none; text-align: right; }
         .logout-btn {
             display: block; width: 90%; margin: 20px auto; padding: 12px;
             background: linear-gradient(to bottom, #ff5f5f, #d11e1e);
@@ -26,46 +25,39 @@
 <body>
     <div class="navbar">Settings</div>
 
-    <div class="section-title">THEME SELECTION</div>
+    <div class="section-title">Profile</div>
     <ul class="ios-list">
+        <li>Nickname <input type="text" placeholder="User"></li>
         <li>Theme 
-            <select name="theme">
+            <select>
                 <option>iOS 6 Classic</option>
                 <option>Frutiger Aero Blue</option>
-                <option>Eco Green Gloss</option>
-                <option>Windows Vista Glass</option>
-                <option>Aqua Pearl</option>
+                <option>Windows Vista</option>
+                <option>Eco Green</option>
             </select>
         </li>
     </ul>
 
-    <div class="section-title">AUDIO SETTINGS</div>
+    <div class="section-title">Playback</div>
     <ul class="ios-list">
         <li>Music Quality 
-            <select name="quality">
-                <option>Standard (128kbps)</option>
-                <option>High (256kbps)</option>
-                <option>Aero Lossless (FLAC)</option>
+            <select>
+                <option>Normal</option>
+                <option>High</option>
+                <option>Lossless</option>
             </select>
         </li>
         <li>Equalizer 
-            <select name="eq">
-                <option>Flat</option>
+            <select>
+                <option>Acoustic</option>
                 <option>Bass Booster</option>
                 <option>Electronic</option>
-                <option>Acoustic</option>
                 <option>Vocal Booster</option>
             </select>
         </li>
     </ul>
 
-    <div class="section-title">ACCOUNT</div>
-    <ul class="ios-list">
-        <li style="color: #586d8d;">Restore Purchases</li>
-        <li style="color: #586d8d;">Privacy Policy</li>
-    </ul>
-
     <a href="/logout" class="logout-btn">Sign Out</a>
-    <a href="/index.html" style="display: block; text-align: center; color: #444; text-decoration: none; margin-bottom: 30px;">Done</a>
+    <a href="/index.html" style="display: block; text-align: center; color: #444; text-decoration: none;">Done</a>
 </body>
 </html>
