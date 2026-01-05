@@ -7,17 +7,17 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. DATABASE CONNECTION
-// Ensure MONGO_URI is set in Render Environment Variables
+// DATABASE CONNECTION
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Aero Server: MongoDB Connected!"))
-    .catch(err => console.error("Database Error:", err));
+    .then(() => console.log("Aero Server: DB Connected!"))
+    .catch(err => console.error("DB Error:", err));
 
-// 2. SCHEMAS
+// SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
     nickname: { type: String, unique: true },
     email: { type: String, unique: true },
-    password: String
+    password: String,
+    friends: [String]
 }));
 
 const Post = mongoose.model('Post', new mongoose.Schema({
@@ -26,13 +26,30 @@ const Post = mongoose.model('Post', new mongoose.Schema({
     date: { type: Date, default: Date.now }
 }));
 
-// 3. MIDDLEWARE
-app.use(session({ secret: 'aero-vibe', resave: false, saveUninitialized: false }));
+// MIDDLEWARE
+app.use(session({ secret: 'aero-vibe-2026', resave: false, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname))); // Serves your HTML files
+app.use(express.static(__dirname));
 
-// 4. AUTH ROUTES
+// AUTHENTICATION LOGIC
+const protect = (req, res, next) => {
+    if (req.session.isLoggedIn) next();
+    else res.redirect('/login.html');
+};
+
+// PUBLIC ROUTES (No Login Required)
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/library.html', (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
+app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
+
+// PRIVATE ROUTES (Login Required)
+app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
+app.get('/profile.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
+
+// API ENDPOINTS
 app.post('/login', async (req, res) => {
     const user = await User.findOne({ email: req.body.email.toLowerCase().trim(), password: req.body.password });
     if (user) {
@@ -42,31 +59,15 @@ app.post('/login', async (req, res) => {
     } else { res.send("Invalid Login."); }
 });
 
-// 5. SOCIAL API (Fixes)
-app.get('/api/posts', async (req, res) => {
-    const posts = await Post.find().sort({ date: -1 });
-    res.json(posts);
+app.get('/api/posts', async (req, res) => res.json(await Post.find().sort({ date: -1 })));
+app.post('/api/post', protect, async (req, res) => {
+    const p = new Post({ author: req.session.nickname, content: req.body.content });
+    await p.save(); res.redirect('/social.html');
 });
 
-app.post('/api/post', async (req, res) => {
-    if (!req.session.isLoggedIn) return res.status(401).send("Not Logged In");
-    const newPost = new Post({ author: req.session.nickname, content: req.body.content });
-    await newPost.save();
-    res.redirect('/social.html');
+app.get('/api/search-users', async (req, res) => {
+    const users = await User.find({ nickname: { $regex: req.query.name, $options: 'i' } }).select('nickname');
+    res.json(users);
 });
-
-// 6. PAGE ROUTING (Fixes)
-const protect = (req, res, next) => {
-    if (req.session.isLoggedIn) next();
-    else res.redirect('/login.html');
-};
-
-// This line specifically fixes "Cannot GET /"
-app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-
-app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
-app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 
 app.listen(PORT, () => console.log('Aero Server Online'));
