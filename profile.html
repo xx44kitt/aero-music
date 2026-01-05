@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aero Profile</title>
+    <style>
+        body { background: #e9ebee; margin: 0; font-family: sans-serif; }
+        .header { background: #3b5998; color: white; padding: 20px; text-align: center; }
+        .container { max-width: 500px; margin: 20px auto; padding: 10px; }
+        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        .btn { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .add-btn { background: #42b72a; color: white; }
+        .del-btn { background: #fa3e3e; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="profName">User Profile</h1>
+        <div id="friendActions"></div>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h3>Write on this wall</h3>
+            <form action="/api/wall-post" method="POST">
+                <input type="hidden" name="to" id="postTo">
+                <textarea name="content" placeholder="Write something..." style="width:100%;" required></textarea>
+                <button type="submit" class="btn" style="background:#3b5998; color:white; margin-top:5px;">Post to Wall</button>
+            </form>
+        </div>
+
+        <div id="wall"></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const targetUser = params.get('user');
+        document.getElementById('postTo').value = targetUser;
+
+        fetch(`/api/profile/${targetUser}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('profName').innerText = data.user.nickname;
+                
+                if(!data.isMe) {
+                    const btnArea = document.getElementById('friendActions');
+                    btnArea.innerHTML = `
+                        <form action="/api/add-friend" method="POST" style="display:inline;">
+                            <input type="hidden" name="friendName" value="${targetUser}">
+                            <button class="btn add-btn">Add Friend</button>
+                        </form>
+                    `;
+                }
+
+                document.getElementById('wall').innerHTML = data.posts.map(p => `
+                    <div class="box">
+                        <b>${p.from}</b>: ${p.content}
+                        <div style="font-size:10px; color:gray;">${new Date(p.date).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            });
+    </script>
+</body>
+</html>
