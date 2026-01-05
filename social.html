@@ -1,68 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AeroBook - Social Wall</title>
+    <title>AeroBook - Social</title>
     <style>
-        body { background: #e9ebee; margin: 0; font-family: Helvetica, Arial, sans-serif; }
-        .navbar { background: #3b5998; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-btn { background: rgba(0,0,0,0.2); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .music-bar { background: #fffbe6; border-bottom: 1px solid #ffe58f; padding: 8px; text-align: center; font-size: 12px; }
-        .container { max-width: 500px; margin: 20px auto; padding: 0 10px; }
-        .post-box { background: white; border: 1px solid #ddd; padding: 10px; border-radius: 4px; }
-        textarea { width: 100%; border: none; outline: none; resize: none; }
-        .post-btn { background: #4267b2; color: white; border: none; padding: 5px 15px; border-radius: 2px; float: right; cursor: pointer; }
-        .feed-post { background: white; border: 1px solid #ddd; margin-top: 20px; padding: 12px; border-radius: 4px; }
-        #friends-list { display: none; background: white; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        body { background: #e9ebee; margin: 0; font-family: sans-serif; }
+        .nav { background: #3b5998; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 500px; margin: 15px auto; padding: 10px; }
+        .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        
+        /* Old Google Style */
+        .google-logo span { font-weight: bold; font-size: 24px; font-family: 'arial'; }
+        .g-blue { color: #4285F4; } .g-red { color: #EA4335; } .g-yellow { color: #FBBC05; } .g-green { color: #34A853; }
+        .google-btn { background: #f8f9fa; border: 1px solid #f8f9fa; padding: 8px 16px; border-radius: 4px; color: #3c4043; cursor: pointer; margin: 5px; }
+        .google-btn:hover { border: 1px solid #dadce0; }
+        
+        input, textarea { width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 4px; box-sizing: border-box; }
+        .post-btn { background: #4267b2; color: white; border: none; padding: 8px 16px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; margin-top: 5px; }
+        #friends { display: none; background: #fffbe6; padding: 10px; border: 1px solid #ffe58f; margin-bottom: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div style="display:flex; gap:10px;">
-            <a href="/index.html" class="nav-btn">◀ Player</a>
-            <button onclick="toggleFriends()" class="nav-btn">Friends</button>
-        </div>
-        <strong>AeroBook</strong>
-        <div style="width:60px;"></div>
+    <div class="nav">
+        <a href="/index.html" style="color:white; text-decoration:none; font-size: 13px;">◀ Player</a>
+        <b>AeroBook</b>
+        <button onclick="toggleF()" style="background:rgba(0,0,0,0.2); border:none; color:white; padding:4px 8px; border-radius:3px; cursor:pointer;">Friends</button>
     </div>
 
-    <div class="music-bar">🎵 <strong>Now Playing:</strong> Frutiger Dreams - Aero Orchestra</div>
-
     <div class="container">
-        <div id="friends-list">
-            <h4 style="margin:0 0 10px 0;">Friends Online</h4>
-            <div style="font-size:13px;">🟢 Pashaaero (Admin)<br>🟢 AeroUser_2026</div>
+        <div id="friends">
+            <h4 style="margin:0;">Friends Online</h4>
+            <div style="font-size:12px; margin-top:5px;">🟢 Pashaaero (Admin)<br>🟢 AeroUser_2026</div>
         </div>
 
-        <div class="post-box">
+        <div class="box" style="text-align:center;">
+            <div class="google-logo">
+                <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
+            </div>
+            <input type="text" id="sq" placeholder="Search Aero users..." style="border-radius:20px; margin: 10px 0;">
+            <div>
+                <button onclick="searchAero()" class="google-btn">Aero Search</button>
+                <button onclick="googleWeb()" class="google-btn">I'm Feeling Lucky</button>
+            </div>
+            <div id="res" style="margin-top:10px; font-size:13px;"></div>
+        </div>
+
+        <div class="box">
             <form action="/api/post" method="POST">
-                <textarea name="content" placeholder="Write something on the wall..." required></textarea>
+                <textarea name="content" placeholder="What's on your mind?" required></textarea>
                 <button type="submit" class="post-btn">Post</button>
                 <div style="clear:both;"></div>
             </form>
         </div>
+
         <div id="feed"></div>
     </div>
 
     <script>
-        function toggleFriends() {
-            const list = document.getElementById('friends-list');
-            list.style.display = list.style.display === 'none' ? 'block' : 'none';
+        function toggleF() { const f = document.getElementById('friends'); f.style.display = f.style.display==='block'?'none':'block'; }
+
+        async function searchAero() {
+            const q = document.getElementById('sq').value;
+            const res = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
+            const div = document.getElementById('res');
+            if (res.length > 0) div.innerHTML = `Found User: <b>${res[0].nickname}</b>`;
+            else div.innerHTML = `Not found. <a href="https://google.com/search?q=${q}" target="_blank">Search Google?</a>`;
         }
 
-        fetch('/api/posts').then(res => res.json()).then(posts => {
-            const feed = document.getElementById('feed');
-            feed.innerHTML = posts.map(post => `
-                <div class="feed-post">
-                    <b style="color:#365899;">${post.author}</b>
-                    <p>${post.content}</p>
-                    <div style="background:#f2f3f5; padding:8px; margin-top:10px;">
-                        ${post.comments.map(c => `<div style="font-size:12px;"><b>${c.author}:</b> ${c.text}</div>`).join('')}
-                        <form action="/api/comment" method="POST" style="margin-top:5px;">
-                            <input type="hidden" name="postId" value="${post._id}">
-                            <input type="text" name="text" placeholder="Comment..." style="width:100%; border:1px solid #ddd; padding:4px;" required>
-                        </form>
-                    </div>
-                </div>
+        function googleWeb() { window.open('https://google.com/search?q=' + document.getElementById('sq').value); }
+
+        fetch('/api/posts').then(r => r.json()).then(p => {
+            document.getElementById('feed').innerHTML = p.map(x => `
+                <div class="box"><b>${x.author}</b><p>${x.content}</p></div>
             `).join('');
         });
     </script>
