@@ -1,97 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AeroBook - Social</title>
+    <title>AeroBook</title>
     <style>
         body { background: #e9ebee; margin: 0; font-family: sans-serif; }
-        .navbar { background: #3b5998; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
-        .main-layout { display: flex; max-width: 900px; margin: 15px auto; gap: 20px; padding: 0 10px; }
-        .sidebar { width: 250px; display: none; }
-        @media (min-width: 768px) { .sidebar { display: block; } }
-        .feed { flex: 1; }
+        .nav { background: #3b5998; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
         .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-        .aero-logo { font-size: 32px; font-weight: bold; text-align: center; font-family: arial; margin-bottom: 15px; }
-        .post-card { position: relative; }
-        .del-link { font-size: 11px; color: #999; text-decoration: none; cursor: pointer; float: right; }
-        .del-link:hover { color: #fa3e3e; }
-        .comment-box { background: #f2f3f5; border-radius: 4px; padding: 10px; margin-top: 10px; font-size: 13px; }
-        .comment-item { border-bottom: 1px solid #ddd; padding: 5px 0; }
-        .comment-input { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px; box-sizing: border-box; margin-top: 8px; }
-        .btn { background: #4267b2; color: white; border: none; padding: 8px 15px; border-radius: 2px; font-weight: bold; cursor: pointer; }
+        .aero-logo { font-size: 30px; font-weight: bold; text-align: center; margin-bottom: 15px; font-family: arial; }
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .comment-sec { background: #f2f3f5; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; }
+        .comment-item { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding: 4px 0; }
+        .btn { background: #4267b2; color: white; border: none; padding: 8px 15px; border-radius: 2px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div style="display:flex; gap:15px; align-items:center;">
-            <a href="/index.html" style="color:white; text-decoration:none; font-weight:bold;">◀ Home</a>
-            <a href="#" id="meBtn" style="color:white; text-decoration:none; font-size:13px;">My Profile</a>
+    <div class="nav">
+        <div style="display:flex; gap:15px;">
+            <a href="/index.html">◀ Home</a>
+            <a id="myProfileBtn" href="#">My Profile</a>
         </div>
         <b>AeroBook</b>
-        <a href="/logout" style="color:white; text-decoration:none; font-size:12px;">Logout</a>
+        <a href="/logout">Logout</a>
     </div>
 
-    <div class="main-layout">
-        <div class="sidebar">
-            <div class="box">
-                <h4 style="margin:0;">Aero Online</h4>
-                <div id="friendsList" style="margin-top:10px; font-size:13px; color:#555;">Loading friends...</div>
+    <div class="container">
+        <div class="box">
+            <div class="aero-logo">
+                <span style="color:#4285F4">A</span><span style="color:#EA4335">e</span><span style="color:#FBBC05">r</span><span style="color:#4285F4">o</span><span style="color:#34A853">B</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">k</span>
             </div>
+            <form action="/api/post" method="POST">
+                <textarea name="content" style="width:100%; border:1px solid #ddd; padding:10px; box-sizing:border-box;" placeholder="What's on your mind?"></textarea>
+                <button type="submit" class="btn" style="float:right; margin-top:5px;">Post</button>
+                <div style="clear:both;"></div>
+            </form>
         </div>
 
-        <div class="feed">
-            <div class="box">
-                <div class="aero-logo">
-                    <span style="color:#4285F4">A</span><span style="color:#EA4335">e</span><span style="color:#FBBC05">r</span><span style="color:#4285F4">o</span><span style="color:#34A853">B</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">k</span>
-                </div>
-                <input type="text" id="sq" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ddd;" placeholder="Search people...">
-                <button onclick="search()" class="btn" style="width:100%; margin-top:10px;">Search</button>
-                <div id="res" style="margin-top:10px; text-align:center; font-size:13px;"></div>
-            </div>
-
-            <div class="box">
-                <form action="/api/post" method="POST">
-                    <textarea name="content" style="width:100%; height:60px; border:1px solid #ddd; padding:10px; box-sizing:border-box;" placeholder="Write something..."></textarea>
-                    <button type="submit" class="btn" style="float:right; margin-top:5px;">Post</button>
-                    <div style="clear:both;"></div>
-                </form>
-            </div>
-
-            <div id="feedContent"></div>
-        </div>
+        <div id="feed"></div>
     </div>
 
     <script>
-        // Set dynamic My Profile link (logic assumes current user name is known)
-        async function loadFeed() {
+        async function init() {
+            // Get user data to fix profile link and delete permissions
+            const res = await fetch('/api/profile/unknown').catch(() => {}); // Dummy call to get myName
+            const data = await res.json();
+            const myName = data.myName;
+            document.getElementById('myProfileBtn').href = `/profile.html?user=${myName}`;
+
             const posts = await fetch('/api/posts').then(r => r.json());
-            const feed = document.getElementById('feedContent');
-            feed.innerHTML = posts.map(p => `
-                <div class="box post-card">
-                    <form action="/api/delete-post" method="POST">
-                        <input type="hidden" name="postId" value="${p._id}">
-                        <button type="submit" class="del-link" style="border:none; background:none;">Delete</button>
-                    </form>
-                    <a href="/profile.html?user=${p.author}" style="color:#365899; font-weight:bold; text-decoration:none;">${p.author}</a>
-                    <p style="margin:10px 0;">${p.content}</p>
+            document.getElementById('feed').innerHTML = posts.map(p => `
+                <div class="box">
+                    <div class="post-header">
+                        <a href="/profile.html?user=${p.author}" style="color:#365899; font-weight:bold; text-decoration:none;">${p.author}</a>
+                        ${p.author === myName ? `<form action="/api/delete-post" method="POST"><input type="hidden" name="postId" value="${p._id}"><button style="color:#999; border:none; background:none; cursor:pointer; font-size:11px;">Delete Post</button></form>` : ''}
+                    </div>
+                    <p>${p.content}</p>
                     
-                    <div class="comment-box">
-                        ${(p.comments || []).map(c => `<div class="comment-item"><b>${c.author}</b>: ${c.text}</div>`).join('')}
-                        <form action="/api/comment" method="POST">
+                    <div class="comment-sec">
+                        ${(p.comments || []).map(c => `
+                            <div class="comment-item">
+                                <span><b>${c.author}</b>: ${c.text}</span>
+                                ${c.author === myName ? `
+                                <form action="/api/delete-comment" method="POST">
+                                    <input type="hidden" name="postId" value="${p._id}">
+                                    <input type="hidden" name="commentId" value="${c._id}">
+                                    <button style="color:red; border:none; background:none; cursor:pointer; font-size:10px;">X</button>
+                                </form>` : ''}
+                            </div>
+                        `).join('')}
+                        <form action="/api/comment" method="POST" style="margin-top:8px;">
                             <input type="hidden" name="postId" value="${p._id}">
-                            <input name="text" class="comment-input" placeholder="Write a comment...">
+                            <input name="text" placeholder="Add a comment..." style="width:100%; border:1px solid #ddd; padding:5px; font-size:12px;">
                         </form>
                     </div>
                 </div>
             `).join('');
         }
-
-        async function search() {
-            const q = document.getElementById('sq').value;
-            const users = await fetch(`/api/search-users?name=${q}`).then(r => r.json());
-            document.getElementById('res').innerHTML = users.length ? `<a href="/profile.html?user=${users[0].nickname}" style="color:#365899; font-weight:bold;">Visit ${users[0].nickname}'s Profile</a>` : "User not found.";
-        }
-
-        loadFeed();
+        init();
     </script>
 </body>
 </html>
