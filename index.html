@@ -1,53 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aero Music</title>
     <style>
-        body { background: #000; margin: 0; font-family: "Helvetica Neue", Helvetica; color: white; overflow: hidden; }
+        /* Classic iOS 6 Linen Background */
+        body { 
+            background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); 
+            margin: 0; 
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* Glossy Navbar with Glass Effect */
         .navbar { 
-            background: linear-gradient(to bottom, #444, #000);
-            height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
-            font-weight: bold; border-bottom: 1px solid #333;
+            background: linear-gradient(to bottom, #b2bbca 0%, #6d84a2 50%, #597395 51%, #4b6991 100%);
+            height: 44px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 0 10px;
+            font-weight: bold;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
+            border-bottom: 1px solid #2d3e5a;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
+
+        .nav-btn {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.3);
+            border-radius: 5px;
+            padding: 5px 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        /* Album Art with Glossy Overlay */
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 30px;
+        }
+
         .album-art { 
-            width: 280px; height: 280px; margin: 40px auto; 
+            width: 260px; 
+            height: 260px; 
             background: linear-gradient(135deg, #74b0ed, #0078d4); 
-            border-radius: 10px; box-shadow: 0 0 40px rgba(0,120,212,0.4);
-            display: flex; align-items: center; justify-content: center; font-size: 80px;
+            border-radius: 6px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 100px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #000;
         }
-        .controls { 
-            background: linear-gradient(to bottom, rgba(40,40,40,0.9), rgba(0,0,0,1)); 
-            position: fixed; bottom: 0; width: 100%; height: 120px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+
+        /* The "Glass" shine across the album art */
+        .album-art::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
         }
-        .playback-btns { display: flex; align-items: center; gap: 40px; margin-bottom: 10px; }
-        .nav-link { color: #ccc; text-decoration: none; font-size: 13px; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; }
+
+        .song-info {
+            text-align: center;
+            margin-top: 25px;
+            color: #444;
+            text-shadow: 0 1px 0 white;
+        }
+
+        .song-title { font-size: 20px; font-weight: bold; margin: 0; }
+        .artist-name { font-size: 16px; color: #555; margin: 5px 0; }
+
+        /* iOS 6 Playback Controls */
+        .controls-tray { 
+            background: rgba(0,0,0,0.8);
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            height: 140px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            border-top: 1px solid #444;
+        }
+
+        .progress-bar {
+            width: 85%;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            position: relative;
+            border: 1px solid #000;
+        }
+
+        .progress-fill {
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(to bottom, #74b0ed, #0078d4);
+            border-radius: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(to bottom, #eee, #999);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 24px;
+            border: 1px solid #555;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
     </style>
 </head>
 <body>
+
     <div class="navbar">
-        <a href="/library.html" class="nav-link">Library</a>
-        <span>Aero Music</span>
-        <a href="/account.html" class="nav-link">Settings</a>
+        <a href="/social.html" class="nav-btn">AeroBook</a>
+        <span>Now Playing</span>
+        <a href="/account.html" class="nav-btn">Settings</a>
     </div>
 
-    <div class="album-art">🎵</div>
-
-    <div style="text-align: center; padding: 20px;">
-        <h2 style="margin: 5px 0;">Frutiger Dreams</h2>
-        <p style="color: #74b0ed; margin: 0;">Aero System Orchestra</p>
-    </div>
-
-    <div class="controls">
-        <div class="playback-btns">
-            <span style="font-size: 30px;">⏪</span>
-            <span style="font-size: 50px;">▶️</span>
-            <span style="font-size: 30px;">⏩</span>
-        </div>
-        <div style="width: 80%; height: 3px; background: #333; border-radius: 2px;">
-            <div style="width: 40%; height: 100%; background: #74b0ed; border-radius: 2px;"></div>
+    <div class="player-container">
+        <div class="album-art">🎵</div>
+        
+        <div class="song-info">
+            <p class="song-title">Frutiger Dreams</p>
+            <p class="artist-name">Aero System Orchestra</p>
         </div>
     </div>
+
+    <div class="controls-tray">
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="btn-group">
+            <span style="font-size: 30px; cursor: pointer;">⏪</span>
+            <div class="play-btn">▶</div>
+            <span style="font-size: 30px; cursor: pointer;">⏩</span>
+        </div>
+    </div>
+
 </body>
 </html>
