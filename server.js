@@ -7,17 +7,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. DATABASE CONNECTION 
-// Uses your environment variable for security
-const mongoURI = process.env.MONGO_URI; 
-
-mongoose.connect(mongoURI)
-    .then(() => console.log("Aero Music Database Connected Successfully!"))
-    .catch(err => console.error("Database Connection Error:", err));
+// 1. DATABASE CONNECTION
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Aero Cloud Server: Permanent DB Connected!"))
+    .catch(err => console.error("Database connection error:", err));
 
 // 2. SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
-    nickname: String,
+    nickname: { type: String, unique: true },
     email: { type: String, unique: true },
     password: String,
     friends: [{ type: String }]
@@ -37,33 +34,21 @@ const WallPost = mongoose.model('WallPost', new mongoose.Schema({
 }));
 
 // 3. MIDDLEWARE
-app.use(session({
-    secret: 'aero-skeuo-secret',
-    resave: false,
-    saveUninitialized: false
-}));
+app.use(session({ secret: 'aero-skeuo-secret', resave: false, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(__dirname)); // Serves your CSS/Images automatically
 
-// 4. AUTHENTICATION ROUTES
+// 4. AUTHENTICATION
 app.post('/signup', async (req, res) => {
     try {
-        const user = new User({
-            nickname: req.body.nickname,
-            email: req.body.email.toLowerCase().trim(),
-            password: req.body.password
-        });
+        const user = new User({ nickname: req.body.nickname, email: req.body.email.toLowerCase().trim(), password: req.body.password });
         await user.save();
         res.send('<h2>Account Created!</h2><a href="/login.html">Login</a>');
-    } catch (e) { res.send("Error: Account exists or DB error."); }
+    } catch (e) { res.send("Error: User exists or DB error."); }
 });
 
 app.post('/login', async (req, res) => {
-    const user = await User.findOne({ 
-        email: req.body.email.toLowerCase().trim(), 
-        password: req.body.password 
-    });
+    const user = await User.findOne({ email: req.body.email.toLowerCase().trim(), password: req.body.password });
     if (user) {
         req.session.isLoggedIn = true;
         req.session.nickname = user.nickname;
@@ -71,41 +56,30 @@ app.post('/login', async (req, res) => {
     } else { res.send("Invalid Login."); }
 });
 
-// 5. SOCIAL & SEARCH API (Fixes)
-app.get('/api/posts', async (req, res) => {
-    const posts = await Post.find().sort({ date: -1 });
-    res.json(posts);
-});
-
-app.post('/api/post', async (req, res) => {
-    if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    const newPost = new Post({ author: req.session.nickname, content: req.body.content });
-    await newPost.save();
-    res.redirect('/social.html');
-});
-
+// 5. FRIENDS & SEARCH ENGINE
 app.get('/api/search-users', async (req, res) => {
     const users = await User.find({ nickname: { $regex: req.query.name, $options: 'i' } }).select('nickname');
     res.json(users);
 });
 
-// 6. PAGE ROUTES (Fixes)
-const protect = (req, res, next) => {
-    if (req.session.isLoggedIn) next();
-    else res.redirect('/login.html');
-};
+app.post('/api/add-friend', async (req, res) => {
+    if (!req.session.isLoggedIn) return res.redirect('/login.html');
+    await User.findOneAndUpdate({ nickname: req.session.nickname }, { $addToSet: { friends: req.body.friendName } });
+    await User.findOneAndUpdate({ nickname: req.body.friendName }, { $addToSet: { friends: req.session.nickname } });
+    res.redirect(`/profile.html?user=${req.body.friendName}`);
+});
 
+// 6. PAGE ROUTES
+const protect = (req, res, next) => req.session.isLoggedIn ? next() : res.redirect('/login.html');
 app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
 app.get('/profile.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
 app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
-app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
-
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login.html');
+app.get('/api/posts', async (req, res) => res.json(await Post.find().sort({ date: -1 })));
+app.post('/api/post', async (req, res) => {
+    const p = new Post({ author: req.session.nickname, content: req.body.content });
+    await p.save(); res.redirect('/social.html');
 });
 
-app.listen(PORT, () => console.log('Aero Server Online on Port ' + PORT));
+app.listen(PORT, () => console.log('Aero Server Online'));
