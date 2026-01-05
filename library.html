@@ -1,42 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Library</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero - Library</title>
     <style>
-        body { background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); margin: 0; font-family: "Helvetica Neue", Helvetica; }
-        .navbar { 
-            background: linear-gradient(to bottom, #b2bbca 0%, #6d84a2 50%, #597395 51%, #4b6991 100%);
-            height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
-            color: white; font-weight: bold; text-shadow: 0 -1px 0 rgba(0,0,0,0.5); border-bottom: 1px solid #2d3e5a;
-        }
-        .ios-list { background: white; border-top: 1px solid #ababab; border-bottom: 1px solid #ababab; margin: 20px 0; padding: 0; list-style: none; }
-        .ios-list li { 
-            border-bottom: 1px solid #e0e0e0; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
-            color: black; font-weight: bold; font-size: 18px; cursor: pointer;
-        }
-        .ios-list li:active { background-color: #007aff; color: white; }
-        .chevron { color: #bbbbbb; font-size: 20px; }
-        .nav-btn { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px; font-size: 12px; color: white; text-decoration: none; }
+        body { background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); margin: 0; font-family: Helvetica; color: white; overflow: hidden; }
+        .navbar { background: linear-gradient(to bottom, #b2bbca, #4b6991); height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #2d3e5a; }
+        .nav-btn { background: rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.3); border-radius: 5px; padding: 5px 12px; color: white; text-decoration: none; font-size: 12px; font-weight: bold; }
+        .player-content { display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
+        .album-art { width: 270px; height: 270px; background: linear-gradient(135deg, #a2b9d6, #0078d4); border-radius: 8px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 110px; position: relative; overflow: hidden; border: 1px solid #000; }
+        .album-art::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent); }
+        .song-info { text-align: center; margin-top: 30px; color: #333; text-shadow: 0 1px 0 rgba(255,255,255,0.8); }
+        .controls { background: rgba(0,0,0,0.85); position: fixed; bottom: 0; width: 100%; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid #444; }
+        .play-btn { width: 65px; height: 65px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 26px; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <span>Library</span>
-        <a href="/index.html" class="nav-btn">Now Playing</a>
+        <a href="/index.html" class="nav-btn">◀ Home</a>
+        <span>Music Player</span>
+        <div style="width:50px;"></div>
     </div>
 
-    <ul class="ios-list">
-        <li onclick="location.href='/index.html'">Playlists <span class="chevron">></span></li>
-        <li onclick="location.href='/index.html'">Artists <span class="chevron">></span></li>
-        <li onclick="location.href='/index.html'">Albums <span class="chevron">></span></li>
-        <li onclick="location.href='/index.html'">Songs <span class="chevron">></span></li>
-    </ul>
+    <div class="player-content">
+        <div class="album-art">🎵</div>
+        <div class="song-info">
+            <h2 style="margin:0;">Frutiger Dreams</h2>
+            <p style="color:#555; margin:5px 0;">Aero System Orchestra</p>
+        </div>
+    </div>
 
-    <div style="padding: 15px; color: #666; font-weight: bold; font-size: 14px; text-shadow: 0 1px 0 white;">RECENTLY ADDED</div>
-    <ul class="ios-list" style="margin-top: 0;">
-        <li onclick="location.href='/index.html'">Aero Dreams - System <span class="chevron">></span></li>
-        <li onclick="location.href='/index.html'">Frutiger Sunrise <span class="chevron">></span></li>
-    </ul>
+    <div class="controls">
+        <div style="display:flex; gap:40px; align-items:center;">
+            <span style="font-size:30px; cursor:pointer;">⏪</span>
+            <div class="play-btn">▶</div>
+            <span style="font-size:30px; cursor:pointer;">⏩</span>
+        </div>
+    </div>
 </body>
 </html>
