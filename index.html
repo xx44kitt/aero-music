@@ -3,69 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aero Music</title>
+    <title>Aero Music - Player</title>
     <style>
+        /* iOS 6 Linen Texture Background */
         body { 
             background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); 
-            margin: 0; font-family: "Helvetica Neue", Helvetica, sans-serif;
-            color: white; overflow: hidden;
+            margin: 0; 
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+            -webkit-user-select: none;
         }
+
+        /* Skeuomorphic Glossy Navbar */
         .navbar { 
             background: linear-gradient(to bottom, #b2bbca 0%, #6d84a2 50%, #597395 51%, #4b6991 100%);
-            height: 44px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; font-weight: bold; text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
-            border-bottom: 1px solid #2d3e5a; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            height: 44px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 0 10px;
+            font-weight: bold;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
+            border-bottom: 1px solid #2d3e5a;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
+
+        /* iOS Style Buttons */
         .nav-btn {
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.3);
-            border-radius: 5px; padding: 5px 10px; color: white;
-            text-decoration: none; font-size: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(0,0,0,0.2));
+            border: 1px solid rgba(0,0,0,0.4);
+            border-radius: 5px;
+            padding: 5px 12px;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+            font-weight: bold;
         }
-        .player-container { display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
+
+        .nav-btn:active {
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* Player UI */
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+        }
+
         .album-art { 
-            width: 260px; height: 260px; background: linear-gradient(135deg, #74b0ed, #0078d4); 
-            border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex; align-items: center; justify-content: center; font-size: 100px;
-            position: relative; overflow: hidden; border: 1px solid #000;
+            width: 270px; 
+            height: 270px; 
+            background: linear-gradient(135deg, #a2b9d6, #0078d4); 
+            border-radius: 8px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 110px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #000;
         }
+
+        /* Glass Shine Effect on Album Art */
         .album-art::after {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%);
         }
-        .song-info { text-align: center; margin-top: 25px; color: #444; text-shadow: 0 1px 0 white; }
+
+        .song-info {
+            text-align: center;
+            margin-top: 30px;
+            color: #333;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .song-title { font-size: 22px; font-weight: bold; margin: 0; }
+        .artist-name { font-size: 17px; color: #555; margin: 5px 0; }
+
+        /* Bottom Controls Tray */
         .controls-tray { 
-            background: rgba(0,0,0,0.8); position: fixed; bottom: 0; width: 100%; height: 140px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid #444;
+            background: rgba(0,0,0,0.85);
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            height: 150px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            border-top: 1px solid #444;
         }
-        .progress-bar { width: 85%; height: 8px; background: #222; border-radius: 4px; margin-bottom: 25px; border: 1px solid #000; }
-        .progress-fill { width: 45%; height: 100%; background: linear-gradient(to bottom, #74b0ed, #0078d4); border-radius: 4px; }
+
+        .progress-bar {
+            width: 85%;
+            height: 10px;
+            background: #111;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            position: relative;
+            border: 1px solid #000;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 35%;
+            height: 100%;
+            background: linear-gradient(to bottom, #74b0ed, #0078d4);
+            border-radius: 5px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 45px;
+            align-items: center;
+        }
+
         .play-btn {
-            width: 60px; height: 60px; background: linear-gradient(to bottom, #eee, #999);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: black; font-size: 24px; border: 1px solid #555; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(to bottom, #ffffff, #b1b1b1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 26px;
+            border: 1px solid #333;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        /* Integration with AeroBook Link */
+        .social-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #3b5998;
+            font-weight: bold;
+            text-decoration: none;
+            text-shadow: 0 1px 0 white;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
+
     <div class="navbar">
-        <a href="/social.html" class="nav-btn">AeroBook</a>
+        <a href="/library.html" class="nav-btn">Library</a>
         <span>Now Playing</span>
         <a href="/account.html" class="nav-btn">Settings</a>
     </div>
+
     <div class="player-container">
         <div class="album-art">🎵</div>
+        
         <div class="song-info">
-            <p style="font-size:20px; font-weight:bold; margin:0;">Frutiger Dreams</p>
-            <p style="font-size:16px; color:#555; margin:5px 0;">Aero System Orchestra</p>
+            <p class="song-title">Frutiger Dreams</p>
+            <p class="artist-name">Aero System Orchestra</p>
         </div>
+
+        <a href="/social.html" class="social-link">Open AeroBook Social Wall</a>
     </div>
+
     <div class="controls-tray">
-        <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div style="display:flex; gap:40px; align-items:center;">
-            <span style="font-size:30px; cursor:pointer;">⏪</span>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="btn-group">
+            <span style="font-size: 30px; cursor: pointer;">⏪</span>
             <div class="play-btn">▶</div>
-            <span style="font-size:30px; cursor:pointer;">⏩</span>
+            <span style="font-size: 30px; cursor: pointer;">⏩</span>
         </div>
     </div>
+
 </body>
 </html>
