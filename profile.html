@@ -4,60 +4,52 @@
     <title>Aero Profile</title>
     <style>
         body { background: #e9ebee; margin: 0; font-family: sans-serif; }
-        .header { background: #3b5998; color: white; padding: 20px; text-align: center; }
-        .container { max-width: 500px; margin: 20px auto; padding: 10px; }
+        .nav { background: #3b5998; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .nav a { color: white; text-decoration: none; font-weight: bold; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
+        .header-box { background: white; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
+        .cover { height: 100px; background: linear-gradient(to right, #4285F4, #34A853); }
         .box { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-        .btn { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
-        .add-btn { background: #42b72a; color: white; }
-        .del-btn { background: #fa3e3e; color: white; }
+        .btn-green { background: #42b72a; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 id="profName">User Profile</h1>
-        <div id="friendActions"></div>
+    <div class="nav">
+        <a href="/social.html">◀ Back to AeroBook</a>
+        <b id="navTitle">Profile</b>
+        <div style="width:40px;"></div>
     </div>
-
     <div class="container">
-        <div class="box">
-            <h3>Write on this wall</h3>
-            <form action="/api/wall-post" method="POST">
-                <input type="hidden" name="to" id="postTo">
-                <textarea name="content" placeholder="Write something..." style="width:100%;" required></textarea>
-                <button type="submit" class="btn" style="background:#3b5998; color:white; margin-top:5px;">Post to Wall</button>
+        <div class="header-box">
+            <div class="cover"></div>
+            <div style="padding:15px; text-align:center;">
+                <h2 id="uName" style="margin:0;"></h2>
+                <p id="uBio" style="color:#666;"></p>
+            </div>
+        </div>
+        <div id="editBox" class="box" style="display:none;">
+            <h4>Update Bio</h4>
+            <form action="/api/update-profile" method="POST">
+                <textarea name="bio" id="bioIn" style="width:100%; border:1px solid #ddd; padding:8px;"></textarea>
+                <button type="submit" class="btn-green" style="margin-top:10px;">Save</button>
             </form>
         </div>
-
-        <div id="wall"></div>
+        <div id="posts"></div>
     </div>
-
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const targetUser = params.get('user');
-        document.getElementById('postTo').value = targetUser;
-
-        fetch(`/api/profile/${targetUser}`)
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('profName').innerText = data.user.nickname;
-                
-                if(!data.isMe) {
-                    const btnArea = document.getElementById('friendActions');
-                    btnArea.innerHTML = `
-                        <form action="/api/add-friend" method="POST" style="display:inline;">
-                            <input type="hidden" name="friendName" value="${targetUser}">
-                            <button class="btn add-btn">Add Friend</button>
-                        </form>
-                    `;
-                }
-
-                document.getElementById('wall').innerHTML = data.posts.map(p => `
-                    <div class="box">
-                        <b>${p.from}</b>: ${p.content}
-                        <div style="font-size:10px; color:gray;">${new Date(p.date).toLocaleString()}</div>
-                    </div>
-                `).join('');
-            });
+        const user = new URLSearchParams(window.location.search).get('user');
+        fetch(`/api/profile/${user}`).then(r => r.json()).then(data => {
+            document.getElementById('uName').innerText = data.user.nickname;
+            document.getElementById('uBio').innerText = data.user.bio;
+            document.getElementById('navTitle').innerText = data.user.nickname;
+            if(data.isMe) {
+                document.getElementById('editBox').style.display = 'block';
+                document.getElementById('bioIn').value = data.user.bio;
+            }
+            document.getElementById('posts').innerHTML = data.posts.map(p => `
+                <div class="box"><b>${p.author}</b><p>${p.content}</p></div>
+            `).join('');
+        });
     </script>
 </body>
 </html>
