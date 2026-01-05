@@ -7,21 +7,20 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. DATABASE CONNECTION
-// Pulls the URI from Render Environment variables to satisfy GitHub security
+// DATABASE CONNECTION
+// Uses the Environment Variable you set on Render
 const mongoURI = process.env.MONGO_URI;
 
 mongoose.connect(mongoURI)
-    .then(() => console.log("Aero Music Cloud Server Active: Permanent DB Connected!"))
-    .catch(err => console.error("Database connection error:", err));
+    .then(() => console.log("Permanent Cloud Database Connected!"))
+    .catch(err => console.error("DB Connection Error:", err));
 
-// 2. DATA SCHEMAS
+// SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
     nickname: String,
     email: { type: String, unique: true },
     password: String,
-    theme: { type: String, default: 'iOS 6 Classic' },
-    quality: { type: String, default: 'High' }
+    theme: { type: String, default: 'iOS 6 Classic' }
 }));
 
 const Post = mongoose.model('Post', new mongoose.Schema({
@@ -31,29 +30,22 @@ const Post = mongoose.model('Post', new mongoose.Schema({
     comments: [{ author: String, text: String }]
 }));
 
-// 3. MIDDLEWARE
-app.use(session({
-    secret: 'aero-skeuomorphic-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 3600000 } 
-}));
+// MIDDLEWARE
+app.use(session({ secret: 'aero-secret', resave: false, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 4. AUTHENTICATION (Fixes Signup/Login crashes)
+// AUTH ROUTES
 app.post('/signup', async (req, res) => {
     try {
-        const newUser = new User({
+        const user = new User({
             nickname: req.body.nickname,
             email: req.body.email.toLowerCase().trim(),
             password: req.body.password
         });
-        await newUser.save();
-        res.send('<h2>Account Secured!</h2><a href="/login.html">Login to Aero Music</a>');
-    } catch (e) {
-        res.send('Error: Account could not be created. <a href="/signup.html">Try again</a>');
-    }
+        await user.save();
+        res.send('<h2>Account Created!</h2><a href="/login.html">Login</a>');
+    } catch (e) { res.send("Error: Account exists or DB error."); }
 });
 
 app.post('/login', async (req, res) => {
@@ -66,12 +58,10 @@ app.post('/login', async (req, res) => {
         req.session.nickname = user.nickname;
         req.session.email = user.email;
         res.redirect('/index.html');
-    } else {
-        res.send('Invalid login. <a href="/login.html">Try again</a>');
-    }
+    } else { res.send("Invalid Login."); }
 });
 
-// 5. SOCIAL WALL LOGIC (Fixes "Cannot POST /api/post")
+// SOCIAL ROUTES (Fixes image_b99ebc.png)
 app.get('/api/posts', async (req, res) => {
     const posts = await Post.find().sort({ date: -1 });
     res.json(posts);
@@ -79,34 +69,27 @@ app.get('/api/posts', async (req, res) => {
 
 app.post('/api/post', async (req, res) => {
     if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    const newPost = new Post({ 
-        author: req.session.nickname, 
-        content: req.body.content 
-    });
+    const newPost = new Post({ author: req.session.nickname, content: req.body.content });
     await newPost.save();
     res.redirect('/social.html');
 });
 
 app.post('/api/comment', async (req, res) => {
     if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    const { postId, text } = req.body;
-    await Post.findByIdAndUpdate(postId, {
-        $push: { comments: { author: req.session.nickname, text: text } }
+    await Post.findByIdAndUpdate(req.body.postId, {
+        $push: { comments: { author: req.session.nickname, text: req.body.text } }
     });
     res.redirect('/social.html');
 });
 
-// 6. ACCOUNT UPDATES
+// ACCOUNT UPDATE
 app.post('/update-account', async (req, res) => {
     if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    await User.findOneAndUpdate(
-        { email: req.session.email },
-        { theme: req.body.theme, quality: req.body.quality }
-    );
-    res.redirect('/account.html?saved=true');
+    await User.findOneAndUpdate({ email: req.session.email }, { theme: req.body.theme });
+    res.redirect('/account.html');
 });
 
-// 7. PAGE ROUTES & PROTECTION
+// PAGE ROUTES (Includes Library)
 const protect = (req, res, next) => {
     if (req.session.isLoggedIn) next();
     else res.redirect('/login.html');
@@ -116,13 +99,8 @@ app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.htm
 app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
 app.get('/account.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'account.html')));
-
+app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
 app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
 
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login.html');
-});
-
-app.listen(PORT, () => console.log('Server running on port ' + PORT));
+app.listen(PORT, () => console.log('Aero Server Running...'));
