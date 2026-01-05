@@ -8,16 +8,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 1. DATABASE CONNECTION
+// Ensure MONGO_URI is set in Render Environment Variables
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Aero Cloud Server: Permanent DB Connected!"))
-    .catch(err => console.error("Database connection error:", err));
+    .then(() => console.log("Aero Server: MongoDB Connected!"))
+    .catch(err => console.error("Database Error:", err));
 
 // 2. SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
     nickname: { type: String, unique: true },
     email: { type: String, unique: true },
-    password: String,
-    friends: [{ type: String }]
+    password: String
 }));
 
 const Post = mongoose.model('Post', new mongoose.Schema({
@@ -26,27 +26,13 @@ const Post = mongoose.model('Post', new mongoose.Schema({
     date: { type: Date, default: Date.now }
 }));
 
-const WallPost = mongoose.model('WallPost', new mongoose.Schema({
-    to: String,
-    from: String,
-    content: String,
-    date: { type: Date, default: Date.now }
-}));
-
 // 3. MIDDLEWARE
-app.use(session({ secret: 'aero-skeuo-secret', resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'aero-vibe', resave: false, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname))); // Serves your HTML files
 
-// 4. AUTHENTICATION
-app.post('/signup', async (req, res) => {
-    try {
-        const user = new User({ nickname: req.body.nickname, email: req.body.email.toLowerCase().trim(), password: req.body.password });
-        await user.save();
-        res.send('<h2>Account Created!</h2><a href="/login.html">Login</a>');
-    } catch (e) { res.send("Error: User exists or DB error."); }
-});
-
+// 4. AUTH ROUTES
 app.post('/login', async (req, res) => {
     const user = await User.findOne({ email: req.body.email.toLowerCase().trim(), password: req.body.password });
     if (user) {
@@ -56,30 +42,31 @@ app.post('/login', async (req, res) => {
     } else { res.send("Invalid Login."); }
 });
 
-// 5. FRIENDS & SEARCH ENGINE
-app.get('/api/search-users', async (req, res) => {
-    const users = await User.find({ nickname: { $regex: req.query.name, $options: 'i' } }).select('nickname');
-    res.json(users);
+// 5. SOCIAL API (Fixes)
+app.get('/api/posts', async (req, res) => {
+    const posts = await Post.find().sort({ date: -1 });
+    res.json(posts);
 });
 
-app.post('/api/add-friend', async (req, res) => {
-    if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    await User.findOneAndUpdate({ nickname: req.session.nickname }, { $addToSet: { friends: req.body.friendName } });
-    await User.findOneAndUpdate({ nickname: req.body.friendName }, { $addToSet: { friends: req.session.nickname } });
-    res.redirect(`/profile.html?user=${req.body.friendName}`);
-});
-
-// 6. PAGE ROUTES
-const protect = (req, res, next) => req.session.isLoggedIn ? next() : res.redirect('/login.html');
-app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
-app.get('/profile.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
-app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
-app.get('/api/posts', async (req, res) => res.json(await Post.find().sort({ date: -1 })));
 app.post('/api/post', async (req, res) => {
-    const p = new Post({ author: req.session.nickname, content: req.body.content });
-    await p.save(); res.redirect('/social.html');
+    if (!req.session.isLoggedIn) return res.status(401).send("Not Logged In");
+    const newPost = new Post({ author: req.session.nickname, content: req.body.content });
+    await newPost.save();
+    res.redirect('/social.html');
 });
+
+// 6. PAGE ROUTING (Fixes)
+const protect = (req, res, next) => {
+    if (req.session.isLoggedIn) next();
+    else res.redirect('/login.html');
+};
+
+// This line specifically fixes "Cannot GET /"
+app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+
+app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
+app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
+app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
 
 app.listen(PORT, () => console.log('Aero Server Online'));
