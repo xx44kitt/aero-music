@@ -7,89 +7,74 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// DATABASE CONNECTION
-const mongoURI = process.env.MONGO_URI; 
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Aero Friends Server Active"))
+    .catch(err => console.error(err));
 
-mongoose.connect(mongoURI)
-    .then(() => console.log("Aero Cloud Server: Permanent DB Connected!"))
-    .catch(err => console.error("Database connection error:", err));
-
-// SCHEMAS
+// UPDATED SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
-    nickname: String,
+    nickname: { type: String, unique: true },
     email: { type: String, unique: true },
     password: String,
-    theme: { type: String, default: 'iOS 6 Classic' }
+    friends: [{ type: String }] // Array of nicknames
 }));
 
-const Post = mongoose.model('Post', new mongoose.Schema({
-    author: String,
+const WallPost = mongoose.model('WallPost', new mongoose.Schema({
+    to: String,      // Whose wall it's on
+    from: String,    // Who wrote it
     content: String,
-    date: { type: Date, default: Date.now },
-    comments: [{ author: String, text: String }]
+    date: { type: Date, default: Date.now }
 }));
 
-// MIDDLEWARE
-app.use(session({ secret: 'aero-skeuo-secret-2026', resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'aero-friends-secret', resave: false, saveUninitialized: false }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
-// AUTHENTICATION
-app.post('/signup', async (req, res) => {
-    try {
-        const user = new User({
-            nickname: req.body.nickname,
-            email: req.body.email.toLowerCase().trim(),
-            password: req.body.password
-        });
-        await user.save();
-        res.send('<h2>Account Secured!</h2><a href="/login.html">Login</a>');
-    } catch (e) { res.send("Error: Account exists or Database error."); }
+// --- FRIENDS ENGINE ---
+
+// Add Friend
+app.post('/api/add-friend', async (req, res) => {
+    if (!req.session.isLoggedIn) return res.status(401).send("Login required");
+    const friendName = req.body.friendName;
+    
+    // Add to your list
+    await User.findOneAndUpdate({ nickname: req.session.nickname }, { $addToSet: { friends: friendName } });
+    // Add you to their list (mutual)
+    await User.findOneAndUpdate({ nickname: friendName }, { $addToSet: { friends: req.session.nickname } });
+    
+    res.redirect(`/profile.html?user=${friendName}`);
 });
 
-app.post('/login', async (req, res) => {
-    const user = await User.findOne({ 
-        email: req.body.email.toLowerCase().trim(), 
-        password: req.body.password 
-    });
-    if (user) {
-        req.session.isLoggedIn = true;
-        req.session.nickname = user.nickname;
-        req.session.email = user.email;
-        res.redirect('/index.html');
-    } else { res.send("Invalid Login. <a href='/login.html'>Try again</a>"); }
-});
-
-// SOCIAL & SEARCH API
-app.get('/api/posts', async (req, res) => {
-    const posts = await Post.find().sort({ date: -1 });
-    res.json(posts);
-});
-
-app.post('/api/post', async (req, res) => {
-    if (!req.session.isLoggedIn) return res.redirect('/login.html');
-    const newPost = new Post({ author: req.session.nickname, content: req.body.content });
-    await newPost.save();
+// Delete Friend
+app.post('/api/delete-friend', async (req, res) => {
+    const { friendName } = req.body;
+    await User.findOneAndUpdate({ nickname: req.session.nickname }, { $pull: { friends: friendName } });
+    await User.findOneAndUpdate({ nickname: friendName }, { $pull: { friends: req.session.nickname } });
     res.redirect('/social.html');
 });
 
-app.get('/api/search-users', async (req, res) => {
-    const users = await User.find({ nickname: { $regex: req.query.name, $options: 'i' } }).select('nickname');
-    res.json(users);
+// Post on a Wall
+app.post('/api/wall-post', async (req, res) => {
+    const post = new WallPost({
+        to: req.body.to,
+        from: req.session.nickname,
+        content: req.body.content
+    });
+    await post.save();
+    res.redirect(`/profile.html?user=${req.body.to}`);
 });
 
-// PAGE ROUTES
-const protect = (req, res, next) => {
-    if (req.session.isLoggedIn) next();
-    else res.redirect('/login.html');
-};
+// Get Profile Data
+app.get('/api/profile/:name', async (req, res) => {
+    const user = await User.findOne({ nickname: req.params.name }).select('nickname friends');
+    const posts = await WallPost.find({ to: req.params.name }).sort({ date: -1 });
+    res.json({ user, posts, isMe: req.session.nickname === req.params.name });
+});
 
-app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+// STANDARD ROUTES
+const protect = (req, res, next) => req.session.isLoggedIn ? next() : res.redirect('/login.html');
+app.get('/profile.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
 app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
-app.get('/library.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'library.html')));
-app.get('/account.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'account.html')));
-app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
-app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
+app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-app.listen(PORT, () => console.log('Aero Server Running on ' + PORT));
+app.listen(PORT, () => console.log('Server running...'));
