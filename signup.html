@@ -1,81 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Aero Music - Sign Up</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero Music - Create Account</title>
     <style>
-        body { 
-            margin: 0; background: #0072ff; 
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 50%, #00e5ff 100%);
-            background-attachment: fixed; font-family: 'Helvetica Neue', Helvetica, sans-serif;
-            color: white; text-align: center;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .header {
-            background: rgba(255, 255, 255, 0.4); height: 50px; line-height: 50px;
-            font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.5);
-            box-shadow: inset 0 10px 15px rgba(255,255,255,0.4); text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        /* Aero Glass Effect */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 350px;
+            text-align: center;
+            color: white;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 25px; margin: 15px; padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        /* Usability Fix: Aligned Labels */
-        .input-group { text-align: left; margin: 0 auto; width: 90%; }
-        label { display: block; font-size: 13px; font-weight: bold; margin: 8px 0 3px 10px; text-shadow: 0 1px 1px rgba(0,0,0,0.3); }
+        h2 { margin-bottom: 20px; font-weight: 300; letter-spacing: 2px; }
 
         input {
-            width: 100%; padding: 12px; box-sizing: border-box; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.9);
-            font-size: 16px; color: #333; outline: none;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-sizing: border-box;
         }
 
-        input:focus { border-color: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.5); }
+        input::placeholder { color: rgba(255, 255, 255, 0.7); }
 
-        .btn {
-            width: 90%; padding: 14px; border-radius: 25px; border: 1px solid white;
-            background: linear-gradient(to bottom, #74ebd5 0%, #9face6 100%);
-            color: #004e92; font-weight: bold; font-size: 17px; margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            background: #0078d4;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .btn:active { background: #74ebd5; transform: translateY(1px); }
+        button:hover { background: #005a9e; box-shadow: 0 0 15px rgba(0, 120, 212, 0.6); }
+
+        .footer-links { margin-top: 15px; font-size: 14px; }
+        a { color: #87ceeb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div class="header">CREATE ACCOUNT</div>
-
-    <div class="glass-card">
+    <div class="glass-panel">
+        <h2>AERO MUSIC</h2>
+        <p>Create your account</p>
+        
         <form action="/signup" method="POST">
-            
-            <div class="input-group">
-                <label>NICKNAME</label>
-                <input type="text" name="nickname" placeholder="e.g. AeroUser" required>
-            </div>
-
-            <div class="input-group">
-                <label>EMAIL ADDRESS</label>
-                <input type="email" name="email" placeholder="name@email.com" 
-                       autocapitalize="off" autocorrect="off" required>
-            </div>
-
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <input type="password" name="password" placeholder="Min. 6 characters" required>
-            </div>
-
-            <button type="submit" class="btn">Register & Start Listening</button>
+            <input type="text" name="nickname" placeholder="Nickname" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Create Password" required>
+            <button type="submit">SIGN UP</button>
         </form>
 
-        <a href="login.html" style="display:block; margin-top:20px; font-size:13px; color:white; text-decoration:none; opacity:0.8;">
-            Already have an account? <b>Login</b>
-        </a>
+        <div class="footer-links">
+            Already have an account? <a href="/login.html">Login</a>
+        </div>
     </div>
 
 </body>
