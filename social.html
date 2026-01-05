@@ -1,42 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aero Wall</title>
+    <title>AeroBook - Social Wall</title>
     <style>
         body { background: #e9ebee; margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
-        .navbar { background: #3b5998; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
-        .container { max-width: 500px; margin: 10px auto; padding: 10px; }
+        .navbar { background: #3b5998; color: white; padding: 10px 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .container { max-width: 550px; margin: 20px auto; padding: 0 10px; }
         
         /* Post Box */
-        .post-composer { background: white; border: 1px solid #dddfe2; border-radius: 3px; padding: 10px; margin-bottom: 15px; }
-        textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; }
-        .post-btn { background: #4267b2; color: white; border: none; padding: 5px 15px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; }
-
-        /* News Feed Posts */
-        .feed-post { background: white; border: 1px solid #dddfe2; border-radius: 3px; margin-bottom: 15px; padding: 12px; }
-        .author { color: #365899; font-weight: bold; text-decoration: none; font-size: 14px; }
-        .timestamp { color: #90949c; font-size: 12px; }
-        .content { margin: 10px 0; font-size: 14px; line-height: 1.38; }
+        .post-composer { background: white; border: 1px solid #dddfe2; border-radius: 4px; padding: 12px; margin-bottom: 20px; }
+        textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; margin-bottom: 10px; font-family: inherit; }
+        .post-btn { background: #4267b2; color: white; border: 1px solid #29487d; padding: 6px 16px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; }
+        
+        /* News Feed */
+        .feed-post { background: white; border: 1px solid #dddfe2; border-radius: 4px; margin-bottom: 15px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .author { color: #365899; font-weight: bold; font-size: 14px; text-decoration: none; cursor: pointer; }
+        .timestamp { color: #90949c; font-size: 12px; margin-bottom: 10px; }
+        .content { font-size: 15px; line-height: 1.4; color: #1c1e21; margin-bottom: 12px; }
         
         /* Comments Section */
-        .comments-area { background: #f2f3f5; border-top: 1px solid #e1e2e3; padding: 8px; margin: 0 -12px -12px -12px; }
-        .comment { font-size: 12px; margin-bottom: 5px; }
+        .comments-area { background: #f2f3f5; border-top: 1px solid #e1e2e3; padding: 8px 12px; margin: 0 -12px -12px -12px; }
+        .comment { font-size: 13px; margin-bottom: 6px; padding: 4px 0; border-bottom: 1px solid #e1e2e3; }
+        .comment:last-child { border-bottom: none; }
         .c-author { color: #365899; font-weight: bold; }
-        .comment-input { width: 90%; border: 1px solid #dddfe2; border-radius: 10px; padding: 5px; font-size: 12px; margin-top: 5px; }
+        .comment-input { width: 100%; border: 1px solid #dddfe2; border-radius: 12px; padding: 6px 12px; font-size: 13px; margin-top: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div class="navbar">
         <span>AeroBook</span>
-        <a href="/index.html" style="color:white; text-decoration:none;">Home</a>
+        <a href="/index.html" style="color:white; text-decoration:none; font-size: 14px;">Home</a>
     </div>
 
     <div class="container">
         <div class="post-composer">
             <form action="/api/post" method="POST">
                 <textarea name="content" placeholder="What's on your mind?" rows="3" required></textarea>
-                <hr style="border: 0; border-top: 1px solid #eee;">
                 <button type="submit" class="post-btn">Post</button>
                 <div style="clear:both;"></div>
             </form>
@@ -46,14 +47,15 @@
     </div>
 
     <script>
+        // Fetches posts from the /api/posts route in server.js
         fetch('/api/posts')
             .then(res => res.json())
             .then(posts => {
                 const feed = document.getElementById('feed');
                 feed.innerHTML = posts.map(post => `
                     <div class="feed-post">
-                        <span class="author">${post.author}</span>
-                        <div class="timestamp">${post.date}</div>
+                        <div class="author">${post.author}</div>
+                        <div class="timestamp">${new Date(post.date).toLocaleString()}</div>
                         <div class="content">${post.content}</div>
                         
                         <div class="comments-area">
@@ -61,7 +63,7 @@
                                 <div class="comment"><span class="c-author">${c.author}</span> ${c.text}</div>
                             `).join('')}
                             <form action="/api/comment" method="POST">
-                                <input type="hidden" name="postId" value="${post.id}">
+                                <input type="hidden" name="postId" value="${post._id}">
                                 <input type="text" name="text" class="comment-input" placeholder="Write a comment..." required>
                             </form>
                         </div>
