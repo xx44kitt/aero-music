@@ -1,71 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aero Music</title>
-    <style>
-        body { 
-            background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); 
-            margin: 0; font-family: "Helvetica Neue", Helvetica, sans-serif;
-            color: white; overflow: hidden;
-        }
-        .navbar { 
-            background: linear-gradient(to bottom, #b2bbca 0%, #6d84a2 50%, #597395 51%, #4b6991 100%);
-            height: 44px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; font-weight: bold; text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
-            border-bottom: 1px solid #2d3e5a; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        .nav-btn {
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.3);
-            border-radius: 5px; padding: 5px 10px; color: white;
-            text-decoration: none; font-size: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-        .player-container { display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
-        .album-art { 
-            width: 260px; height: 260px; background: linear-gradient(135deg, #74b0ed, #0078d4); 
-            border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex; align-items: center; justify-content: center; font-size: 100px;
-            position: relative; overflow: hidden; border: 1px solid #000;
-        }
-        .album-art::after {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
-        }
-        .song-info { text-align: center; margin-top: 25px; color: #444; text-shadow: 0 1px 0 white; }
-        .controls-tray { 
-            background: rgba(0,0,0,0.8); position: fixed; bottom: 0; width: 100%; height: 140px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 1px solid #444;
-        }
-        .progress-bar { width: 85%; height: 8px; background: #222; border-radius: 4px; margin-bottom: 25px; border: 1px solid #000; }
-        .progress-fill { width: 45%; height: 100%; background: linear-gradient(to bottom, #74b0ed, #0078d4); border-radius: 4px; }
-        .play-btn {
-            width: 60px; height: 60px; background: linear-gradient(to bottom, #eee, #999);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: black; font-size: 24px; border: 1px solid #555; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        }
-    </style>
-</head>
-<body>
-    <div class="navbar">
-        <a href="/social.html" class="nav-btn">AeroBook</a>
-        <span>Now Playing</span>
-        <a href="/account.html" class="nav-btn">Settings</a>
-    </div>
-    <div class="player-container">
-        <div class="album-art">🎵</div>
-        <div class="song-info">
-            <p style="font-size:20px; font-weight:bold; margin:0;">Frutiger Dreams</p>
-            <p style="font-size:16px; color:#555; margin:5px 0;">Aero System Orchestra</p>
-        </div>
-    </div>
-    <div class="controls-tray">
-        <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div style="display:flex; gap:40px; align-items:center;">
-            <span style="font-size:30px; cursor:pointer;">⏪</span>
-            <div class="play-btn">▶</div>
-            <span style="font-size:30px; cursor:pointer;">⏩</span>
-        </div>
-    </div>
-</body>
-</html>
+const express = require('express');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 1. DATABASE CONNECTION
+// Pulls the URI from Render Environment variables to satisfy GitHub security
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.connect(mongoURI)
+    .then(() => console.log("Aero Music Cloud Server Active: Permanent DB Connected!"))
+    .catch(err => console.error("Database connection error:", err));
+
+// 2. DATA SCHEMAS
+const User = mongoose.model('User', new mongoose.Schema({
+    nickname: String,
+    email: { type: String, unique: true },
+    password: String,
+    theme: { type: String, default: 'iOS 6 Classic' },
+    quality: { type: String, default: 'High' }
+}));
+
+const Post = mongoose.model('Post', new mongoose.Schema({
+    author: String,
+    content: String,
+    date: { type: Date, default: Date.now },
+    comments: [{ author: String, text: String }]
+}));
+
+// 3. MIDDLEWARE
+app.use(session({
+    secret: 'aero-skeuomorphic-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 3600000 } 
+}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+
+// 4. AUTHENTICATION (Fixes Signup/Login crashes)
+app.post('/signup', async (req, res) => {
+    try {
+        const newUser = new User({
+            nickname: req.body.nickname,
+            email: req.body.email.toLowerCase().trim(),
+            password: req.body.password
+        });
+        await newUser.save();
+        res.send('<h2>Account Secured!</h2><a href="/login.html">Login to Aero Music</a>');
+    } catch (e) {
+        res.send('Error: Account could not be created. <a href="/signup.html">Try again</a>');
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const user = await User.findOne({ 
+        email: req.body.email.toLowerCase().trim(), 
+        password: req.body.password 
+    });
+    if (user) {
+        req.session.isLoggedIn = true;
+        req.session.nickname = user.nickname;
+        req.session.email = user.email;
+        res.redirect('/index.html');
+    } else {
+        res.send('Invalid login. <a href="/login.html">Try again</a>');
+    }
+});
+
+// 5. SOCIAL WALL LOGIC (Fixes "Cannot POST /api/post")
+app.get('/api/posts', async (req, res) => {
+    const posts = await Post.find().sort({ date: -1 });
+    res.json(posts);
+});
+
+app.post('/api/post', async (req, res) => {
+    if (!req.session.isLoggedIn) return res.redirect('/login.html');
+    const newPost = new Post({ 
+        author: req.session.nickname, 
+        content: req.body.content 
+    });
+    await newPost.save();
+    res.redirect('/social.html');
+});
+
+app.post('/api/comment', async (req, res) => {
+    if (!req.session.isLoggedIn) return res.redirect('/login.html');
+    const { postId, text } = req.body;
+    await Post.findByIdAndUpdate(postId, {
+        $push: { comments: { author: req.session.nickname, text: text } }
+    });
+    res.redirect('/social.html');
+});
+
+// 6. ACCOUNT UPDATES
+app.post('/update-account', async (req, res) => {
+    if (!req.session.isLoggedIn) return res.redirect('/login.html');
+    await User.findOneAndUpdate(
+        { email: req.session.email },
+        { theme: req.body.theme, quality: req.body.quality }
+    );
+    res.redirect('/account.html?saved=true');
+});
+
+// 7. PAGE ROUTES & PROTECTION
+const protect = (req, res, next) => {
+    if (req.session.isLoggedIn) next();
+    else res.redirect('/login.html');
+};
+
+app.get('/', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/index.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/social.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'social.html')));
+app.get('/account.html', protect, (req, res) => res.sendFile(path.join(__dirname, 'account.html')));
+
+app.get('/login.html', (req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/signup.html', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
+
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login.html');
+});
+
+app.listen(PORT, () => console.log('Server running on port ' + PORT));
