@@ -1,28 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage Account</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Aero Music - My Profile</title>
     <style>
-        body { margin: 0; background: linear-gradient(135deg, #00c6ff, #0072ff); font-family: sans-serif; color: white; text-align: center; }
-        .glass-card { background: rgba(255,255,255,0.2); border: 1px solid white; border-radius: 20px; margin: 20px; padding: 20px; }
-        input, textarea { width: 90%; padding: 10px; margin: 10px 0; border-radius: 10px; border: none; }
-        .btn-save { width: 90%; padding: 12px; border-radius: 20px; background: #aaffaa; border: none; font-weight: bold; color: #004e92; }
+        body {
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 400px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(to bottom, #00d2ff, #3a7bd5);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        input, textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px;
+            margin: 10px 0;
+            color: white;
+            border-radius: 8px;
+        }
+        .btn-save {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-save:hover { background: #00c6ff; box-shadow: 0 0 20px #00c6ff; }
     </style>
 </head>
 <body>
-    <div style="padding: 20px;">
-        <h2>Account Settings</h2>
-        <div class="glass-card">
-            <form action="/update-account" method="POST">
-                <label>Change Nickname</label>
-                <input type="text" name="nickname" placeholder="New Nickname">
-                <label>Profile Bio</label>
-                <textarea name="bio" placeholder="Write something about your music taste..."></textarea>
-                <button type="submit" class="btn-save">Save Profile Changes</button>
-            </form>
-        </div>
-        <a href="index.html" style="color: white; font-size: 13px;">← Back to Music</a>
+    <div class="profile-card">
+        <div class="avatar-circle">👤</div>
+        <h2>Profile Settings</h2>
+        <form action="/update-account" method="POST">
+            <input type="text" name="nickname" placeholder="Edit Nickname">
+            <textarea name="bio" placeholder="Tell us about your music taste..." rows="3"></textarea>
+            <input type="color" name="theme" title="Choose Profile Theme Color" style="height: 50px;">
+            <button type="submit" class="btn-save">Save Aero Profile</button>
+        </form>
+        <br>
+        <a href="/index.html" style="color: #aaa; text-decoration: none; font-size: 14px;">← Back to Music</a>
     </div>
 </body>
 </html>
