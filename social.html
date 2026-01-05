@@ -2,61 +2,72 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aero Social</title>
+    <title>Aero Wall</title>
     <style>
-        body { background: #ced3d9 url('https://www.transparenttextures.com/patterns/dark-linen.png'); margin: 0; font-family: "Helvetica Neue", Helvetica; }
-        .navbar { 
-            background: linear-gradient(to bottom, #b2bbca 0%, #6d84a2 50%, #597395 51%, #4b6991 100%);
-            height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
-            color: white; font-weight: bold; text-shadow: 0 -1px 0 rgba(0,0,0,0.5);
-        }
-        .section-title { margin: 15px; color: #4c566c; font-weight: bold; text-shadow: 0 1px 0 white; }
-        .friend-list { background: white; border: 1px solid #ababab; border-radius: 10px; margin: 10px; list-style: none; padding: 0; overflow: hidden; }
-        .friend-list li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; color: black; }
+        body { background: #e9ebee; margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        .navbar { background: #3b5998; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+        .container { max-width: 500px; margin: 10px auto; padding: 10px; }
         
-        /* iOS Chat Bubbles */
-        .chat-box { padding: 10px; }
-        .bubble { 
-            padding: 8px 12px; border-radius: 15px; margin: 5px; max-width: 70%; font-size: 14px;
-            position: relative; display: inline-block;
-        }
-        .sent { background: linear-gradient(#56d33f, #2bb114); color: white; align-self: flex-end; float: right; clear: both; }
-        .received { background: linear-gradient(#e5e5ea, #d1d1d6); color: black; align-self: flex-start; float: left; clear: both; }
+        /* Post Box */
+        .post-composer { background: white; border: 1px solid #dddfe2; border-radius: 3px; padding: 10px; margin-bottom: 15px; }
+        textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; }
+        .post-btn { background: #4267b2; color: white; border: none; padding: 5px 15px; border-radius: 2px; font-weight: bold; float: right; cursor: pointer; }
+
+        /* News Feed Posts */
+        .feed-post { background: white; border: 1px solid #dddfe2; border-radius: 3px; margin-bottom: 15px; padding: 12px; }
+        .author { color: #365899; font-weight: bold; text-decoration: none; font-size: 14px; }
+        .timestamp { color: #90949c; font-size: 12px; }
+        .content { margin: 10px 0; font-size: 14px; line-height: 1.38; }
         
-        .message-input { position: fixed; bottom: 0; width: 100%; background: #f0f0f0; border-top: 1px solid #ccc; padding: 10px; display: flex; box-sizing: border-box;}
-        input { flex: 1; border-radius: 15px; border: 1px solid #ccc; padding: 5px 10px; }
-        button { background: none; border: none; color: #007aff; font-weight: bold; padding-left: 10px; }
+        /* Comments Section */
+        .comments-area { background: #f2f3f5; border-top: 1px solid #e1e2e3; padding: 8px; margin: 0 -12px -12px -12px; }
+        .comment { font-size: 12px; margin-bottom: 5px; }
+        .c-author { color: #365899; font-weight: bold; }
+        .comment-input { width: 90%; border: 1px solid #dddfe2; border-radius: 10px; padding: 5px; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <a href="/index.html" style="color:white; text-decoration:none; font-size:12px;">Back</a>
-        <span>Friends</span>
-        <div style="width:30px;"></div>
+        <span>AeroBook</span>
+        <a href="/index.html" style="color:white; text-decoration:none;">Home</a>
     </div>
 
-    <div class="section-title">CHATS</div>
-    <div class="chat-box" id="chat">
-        <div class="bubble received">Welcome to Aero Social! Add friends to start chatting.</div>
+    <div class="container">
+        <div class="post-composer">
+            <form action="/api/post" method="POST">
+                <textarea name="content" placeholder="What's on your mind?" rows="3" required></textarea>
+                <hr style="border: 0; border-top: 1px solid #eee;">
+                <button type="submit" class="post-btn">Post</button>
+                <div style="clear:both;"></div>
+            </form>
+        </div>
+
+        <div id="feed"></div>
     </div>
-
-    <div class="section-title">FIND FRIENDS</div>
-    <ul class="friend-list" id="users">
-        <li style="color:gray;">Searching for users...</li>
-    </ul>
-
-    <form class="message-input" action="/send-message" method="POST">
-        <input type="text" name="text" placeholder="iMessage" required>
-        <input type="hidden" name="to" value="Global">
-        <button type="submit">Send</button>
-    </form>
 
     <script>
-        // Fetch users from our new API
-        fetch('/api/users').then(r => r.json()).then(data => {
-            const list = document.getElementById('users');
-            list.innerHTML = data.map(u => `<li>${u.nickname} <span style="color:#007aff">Add +</span></li>`).join('');
-        });
+        fetch('/api/posts')
+            .then(res => res.json())
+            .then(posts => {
+                const feed = document.getElementById('feed');
+                feed.innerHTML = posts.map(post => `
+                    <div class="feed-post">
+                        <span class="author">${post.author}</span>
+                        <div class="timestamp">${post.date}</div>
+                        <div class="content">${post.content}</div>
+                        
+                        <div class="comments-area">
+                            ${post.comments.map(c => `
+                                <div class="comment"><span class="c-author">${c.author}</span> ${c.text}</div>
+                            `).join('')}
+                            <form action="/api/comment" method="POST">
+                                <input type="hidden" name="postId" value="${post.id}">
+                                <input type="text" name="text" class="comment-input" placeholder="Write a comment..." required>
+                            </form>
+                        </div>
+                    </div>
+                `).join('');
+            });
     </script>
 </body>
 </html>
